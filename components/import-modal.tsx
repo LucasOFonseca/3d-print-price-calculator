@@ -48,6 +48,16 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
       }
     }
 
+    // Validate embalagens (optional for backward compatibility)
+    if (c.embalagens !== undefined) {
+      if (!Array.isArray(c.embalagens)) return false
+      for (const emb of c.embalagens) {
+        if (!emb.id || !emb.nome || typeof emb.quantidade !== 'number' || typeof emb.valorPacote !== 'number') {
+          return false
+        }
+      }
+    }
+
     // Validate energia
     const energia = c.energia as Record<string, unknown>
     if (typeof energia.valorKwh !== 'number' || typeof energia.consumoImpressora !== 'number') {
@@ -238,6 +248,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
               <p className="text-xs font-medium text-muted-foreground">Conteúdo do arquivo:</p>
               <ul className="mt-2 space-y-1 text-sm">
                 <li>{parsedConfig.filamentos.length} filamentos</li>
+                <li>{(parsedConfig.embalagens || []).length} embalagens</li>
                 <li>Configurações de energia</li>
                 <li>Configurações de impressora</li>
                 <li>Configurações de mão de obra</li>

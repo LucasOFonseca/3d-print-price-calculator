@@ -12,7 +12,8 @@ import {
   RotateCcw,
   Plus,
   Pencil,
-  Trash2
+  Trash2,
+  Package
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -46,7 +47,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useAppStore } from '@/lib/store'
-import type { Filament } from '@/lib/types'
+import type { Filament, Embalagem } from '@/lib/types'
 
 export function SettingsScreen() {
   const { 
@@ -57,6 +58,9 @@ export function SettingsScreen() {
     updateFilament,
     addFilament,
     deleteFilament,
+    updateEmbalagem,
+    addEmbalagem,
+    deleteEmbalagem,
     updateEnergyConfig,
     updatePrinterConfig,
     updateLaborConfig,
@@ -74,12 +78,30 @@ export function SettingsScreen() {
     filament: { nome: '', pesoRolo: 1000, valorRolo: 0 }
   })
 
+  const [embalagemModal, setEmbalagemModal] = useState<{
+    open: boolean
+    mode: 'add' | 'edit'
+    embalagem: Partial<Embalagem>
+  }>({
+    open: false,
+    mode: 'add',
+    embalagem: { nome: '', quantidade: 10, valorPacote: 0 }
+  })
+
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean
     filamentId: string | null
   }>({
     open: false,
     filamentId: null
+  })
+
+  const [deleteEmbalagemDialog, setDeleteEmbalagemDialog] = useState<{
+    open: boolean
+    embalagemId: string | null
+  }>({
+    open: false,
+    embalagemId: null
   })
 
   const formatCurrency = (value: number) => {
@@ -124,8 +146,47 @@ export function SettingsScreen() {
     setDeleteDialog({ open: false, filamentId: null })
   }
 
+  const handleSaveEmbalagem = () => {
+    const { embalagem, mode } = embalagemModal
+    if (!embalagem.nome || !embalagem.quantidade || !embalagem.valorPacote) return
+
+    if (mode === 'add') {
+      addEmbalagem({
+        nome: embalagem.nome,
+        quantidade: embalagem.quantidade,
+        valorPacote: embalagem.valorPacote
+      })
+    } else if (embalagem.id) {
+      const custoPorUnidade = embalagem.valorPacote / embalagem.quantidade
+      updateEmbalagem({
+        id: embalagem.id,
+        nome: embalagem.nome,
+        quantidade: embalagem.quantidade,
+        valorPacote: embalagem.valorPacote,
+        custoPorUnidade
+      })
+    }
+
+    setEmbalagemModal({
+      open: false,
+      mode: 'add',
+      embalagem: { nome: '', quantidade: 10, valorPacote: 0 }
+    })
+  }
+
+  const handleDeleteEmbalagem = () => {
+    if (deleteEmbalagemDialog.embalagemId) {
+      deleteEmbalagem(deleteEmbalagemDialog.embalagemId)
+    }
+    setDeleteEmbalagemDialog({ open: false, embalagemId: null })
+  }
+
   const calculatedCostPerGram = filamentModal.filament.pesoRolo && filamentModal.filament.valorRolo
     ? filamentModal.filament.valorRolo / filamentModal.filament.pesoRolo
+    : 0
+
+  const calculatedCostPerUnit = embalagemModal.embalagem.quantidade && embalagemModal.embalagem.valorPacote
+    ? embalagemModal.embalagem.valorPacote / embalagemModal.embalagem.quantidade
     : 0
 
   return (
@@ -149,11 +210,16 @@ export function SettingsScreen() {
       </div>
 
       <Tabs value={settingsTab} onValueChange={(v) => setSettingsTab(v as typeof settingsTab)} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 gap-1 lg:grid-cols-5 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-2 gap-1 lg:grid-cols-6 h-auto p-1">
           <TabsTrigger value="filamentos" className="flex items-center gap-2 text-xs sm:text-sm py-2">
             <Spool className="h-4 w-4" />
             <span className="hidden sm:inline">Filamentos</span>
             <span className="sm:hidden">Filam.</span>
+          </TabsTrigger>
+          <TabsTrigger value="embalagens" className="flex items-center gap-2 text-xs sm:text-sm py-2">
+            <Package className="h-4 w-4" />
+            <span className="hidden sm:inline">Embalagens</span>
+            <span className="sm:hidden">Emb.</span>
           </TabsTrigger>
           <TabsTrigger value="energia" className="flex items-center gap-2 text-xs sm:text-sm py-2">
             <Zap className="h-4 w-4" />
@@ -237,6 +303,83 @@ export function SettingsScreen() {
                               onClick={() => setDeleteDialog({
                                 open: true,
                                 filamentId: filament.id
+                              })}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Embalagens Tab */}
+        <TabsContent value="embalagens" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  Embalagens Cadastradas
+                </CardTitle>
+                <CardDescription>
+                  Gerencie as embalagens disponíveis para incluir no cálculo do orçamento
+                </CardDescription>
+              </div>
+              <Button 
+                onClick={() => setEmbalagemModal({
+                  open: true,
+                  mode: 'add',
+                  embalagem: { nome: '', quantidade: 10, valorPacote: 0 }
+                })}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar Embalagem
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead className="text-right">Quantidade por Pacote</TableHead>
+                      <TableHead className="text-right">Valor do Pacote</TableHead>
+                      <TableHead className="text-right">Custo por Unidade</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(config.embalagens || []).map((embalagem) => (
+                      <TableRow key={embalagem.id}>
+                        <TableCell className="font-medium">{embalagem.nome}</TableCell>
+                        <TableCell className="text-right">{embalagem.quantidade} un</TableCell>
+                        <TableCell className="text-right">{formatCurrency(embalagem.valorPacote)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(embalagem.custoPorUnidade)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setEmbalagemModal({
+                                open: true,
+                                mode: 'edit',
+                                embalagem: { ...embalagem }
+                              })}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteEmbalagemDialog({
+                                open: true,
+                                embalagemId: embalagem.id
                               })}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -418,74 +561,79 @@ export function SettingsScreen() {
       {/* Add/Edit Filament Modal */}
       <Dialog open={filamentModal.open} onOpenChange={(open) => setFilamentModal(prev => ({ ...prev, open }))}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {filamentModal.mode === 'add' ? 'Cadastrar Filamento' : 'Editar Filamento'}
-            </DialogTitle>
-            <DialogDescription>
-              {filamentModal.mode === 'add' 
-                ? 'Adicione um novo tipo de filamento ao sistema'
-                : 'Altere as informações do filamento selecionado'
-              }
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="filament-nome">Nome do Filamento</Label>
-              <Input
-                id="filament-nome"
-                value={filamentModal.filament.nome || ''}
-                onChange={(e) => setFilamentModal(prev => ({
-                  ...prev,
-                  filament: { ...prev.filament, nome: e.target.value }
-                }))}
-                placeholder="Ex: PLA Branco"
-              />
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveFilament(); }}>
+            <DialogHeader>
+              <DialogTitle>
+                {filamentModal.mode === 'add' ? 'Cadastrar Filamento' : 'Editar Filamento'}
+              </DialogTitle>
+              <DialogDescription>
+                {filamentModal.mode === 'add' 
+                  ? 'Adicione um novo tipo de filamento ao sistema'
+                  : 'Altere as informações do filamento selecionado'
+                }
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="filament-nome">Nome do Filamento</Label>
+                <Input
+                  id="filament-nome"
+                  required
+                  value={filamentModal.filament.nome || ''}
+                  onChange={(e) => setFilamentModal(prev => ({
+                    ...prev,
+                    filament: { ...prev.filament, nome: e.target.value }
+                  }))}
+                  placeholder="Ex: PLA Branco"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="filament-peso">Peso do Rolo (g)</Label>
+                <Input
+                  id="filament-peso"
+                  type="number"
+                  min="0"
+                  required
+                  value={filamentModal.filament.pesoRolo || ''}
+                  onChange={(e) => setFilamentModal(prev => ({
+                    ...prev,
+                    filament: { ...prev.filament, pesoRolo: parseFloat(e.target.value) || 0 }
+                  }))}
+                  placeholder="1000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="filament-valor">Valor do Rolo (R$)</Label>
+                <Input
+                  id="filament-valor"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  value={filamentModal.filament.valorRolo || ''}
+                  onChange={(e) => setFilamentModal(prev => ({
+                    ...prev,
+                    filament: { ...prev.filament, valorRolo: parseFloat(e.target.value) || 0 }
+                  }))}
+                  placeholder="89.90"
+                />
+              </div>
+              <div className="rounded-lg bg-muted p-3">
+                <Label className="text-xs text-muted-foreground">Custo por Grama (calculado)</Label>
+                <p className="text-lg font-semibold text-foreground">
+                  {formatCurrency(calculatedCostPerGram)}
+                </p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="filament-peso">Peso do Rolo (g)</Label>
-              <Input
-                id="filament-peso"
-                type="number"
-                min="0"
-                value={filamentModal.filament.pesoRolo || ''}
-                onChange={(e) => setFilamentModal(prev => ({
-                  ...prev,
-                  filament: { ...prev.filament, pesoRolo: parseFloat(e.target.value) || 0 }
-                }))}
-                placeholder="1000"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="filament-valor">Valor do Rolo (R$)</Label>
-              <Input
-                id="filament-valor"
-                type="number"
-                min="0"
-                step="0.01"
-                value={filamentModal.filament.valorRolo || ''}
-                onChange={(e) => setFilamentModal(prev => ({
-                  ...prev,
-                  filament: { ...prev.filament, valorRolo: parseFloat(e.target.value) || 0 }
-                }))}
-                placeholder="89.90"
-              />
-            </div>
-            <div className="rounded-lg bg-muted p-3">
-              <Label className="text-xs text-muted-foreground">Custo por Grama (calculado)</Label>
-              <p className="text-lg font-semibold text-foreground">
-                {formatCurrency(calculatedCostPerGram)}
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setFilamentModal(prev => ({ ...prev, open: false }))}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveFilament}>
-              Salvar
-            </Button>
-          </DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setFilamentModal(prev => ({ ...prev, open: false }))}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                Salvar
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -501,6 +649,103 @@ export function SettingsScreen() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteFilament} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add/Edit Embalagem Modal */}
+      <Dialog open={embalagemModal.open} onOpenChange={(open) => setEmbalagemModal(prev => ({ ...prev, open }))}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={(e) => { e.preventDefault(); handleSaveEmbalagem(); }}>
+            <DialogHeader>
+              <DialogTitle>
+                {embalagemModal.mode === 'add' ? 'Cadastrar Embalagem' : 'Editar Embalagem'}
+              </DialogTitle>
+              <DialogDescription>
+                {embalagemModal.mode === 'add' 
+                  ? 'Adicione um novo tipo de embalagem ao sistema'
+                  : 'Altere as informações da embalagem selecionada'
+                }
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="embalagem-nome">Nome da Embalagem</Label>
+                <Input
+                  id="embalagem-nome"
+                  required
+                  value={embalagemModal.embalagem.nome || ''}
+                  onChange={(e) => setEmbalagemModal(prev => ({
+                    ...prev,
+                    embalagem: { ...prev.embalagem, nome: e.target.value }
+                  }))}
+                  placeholder="Ex: Caixa de Papelão Padrão"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="embalagem-quantidade">Quantidade no Pacote</Label>
+                <Input
+                  id="embalagem-quantidade"
+                  type="number"
+                  min="1"
+                  required
+                  value={embalagemModal.embalagem.quantidade || ''}
+                  onChange={(e) => setEmbalagemModal(prev => ({
+                    ...prev,
+                    embalagem: { ...prev.embalagem, quantidade: parseInt(e.target.value) || 0 }
+                  }))}
+                  placeholder="10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="embalagem-valor">Valor do Pacote (R$)</Label>
+                <Input
+                  id="embalagem-valor"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  value={embalagemModal.embalagem.valorPacote || ''}
+                  onChange={(e) => setEmbalagemModal(prev => ({
+                    ...prev,
+                    embalagem: { ...prev.embalagem, valorPacote: parseFloat(e.target.value) || 0 }
+                  }))}
+                  placeholder="35.00"
+                />
+              </div>
+              <div className="rounded-lg bg-muted p-3">
+                <Label className="text-xs text-muted-foreground">Custo por Unidade (calculado)</Label>
+                <p className="text-lg font-semibold text-foreground">
+                  {formatCurrency(calculatedCostPerUnit)}
+                </p>
+              </div>
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setEmbalagemModal(prev => ({ ...prev, open: false }))}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                Salvar
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Embalagem Confirmation Dialog */}
+      <AlertDialog open={deleteEmbalagemDialog.open} onOpenChange={(open) => setDeleteEmbalagemDialog(prev => ({ ...prev, open }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Embalagem</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta embalagem? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEmbalagem} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

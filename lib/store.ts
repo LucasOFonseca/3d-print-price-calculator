@@ -2,7 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppConfig, Filament, PrintJob, CalculationResult } from './types'
+import type { AppConfig, Filament, PrintJob, CalculationResult, Embalagem } from './types'
 
 const defaultFilaments: Filament[] = [
   {
@@ -28,8 +28,26 @@ const defaultFilaments: Filament[] = [
   }
 ]
 
+const defaultEmbalagens: Embalagem[] = [
+  {
+    id: '1',
+    nome: 'Caixa de Papelão Padrão',
+    quantidade: 10,
+    valorPacote: 35.00,
+    custoPorUnidade: 3.50
+  },
+  {
+    id: '2',
+    nome: 'Saco Bolha Grande',
+    quantidade: 50,
+    valorPacote: 45.00,
+    custoPorUnidade: 0.90
+  }
+]
+
 const defaultConfig: AppConfig = {
   filamentos: defaultFilaments,
+  embalagens: defaultEmbalagens,
   energia: {
     valorKwh: 0.85,
     consumoImpressora: 150
@@ -58,14 +76,17 @@ const defaultPrintJob: PrintJob = {
   tempoAcabamentoMinutos: 45,
   usarMargemPadrao: true,
   margemLucro: 35,
-  observacoes: ''
+  observacoes: '',
+  incluirPosProcessamento: true,
+  embalagemId: '1',
+  incluirEmbalagem: false
 }
 
 interface AppState {
   config: AppConfig
   printJob: PrintJob
   currentScreen: 'calculator' | 'settings'
-  settingsTab: 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro'
+  settingsTab: 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro' | 'embalagens'
   showImportModal: boolean
   showExportModal: boolean
   
@@ -74,6 +95,9 @@ interface AppState {
   updateFilament: (filament: Filament) => void
   addFilament: (filament: Omit<Filament, 'id' | 'custoPorGrama'>) => void
   deleteFilament: (id: string) => void
+  updateEmbalagem: (embalagem: Embalagem) => void
+  addEmbalagem: (embalagem: Omit<Embalagem, 'id' | 'custoPorUnidade'>) => void
+  deleteEmbalagem: (id: string) => void
   updateEnergyConfig: (config: Partial<AppConfig['energia']>) => void
   updatePrinterConfig: (config: Partial<AppConfig['impressora']>) => void
   updateLaborConfig: (config: Partial<AppConfig['maoDeObra']>) => void
@@ -81,7 +105,7 @@ interface AppState {
   setPrintJob: (job: Partial<PrintJob>) => void
   resetPrintJob: () => void
   setCurrentScreen: (screen: 'calculator' | 'settings') => void
-  setSettingsTab: (tab: 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro') => void
+  setSettingsTab: (tab: 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro' | 'embalagens') => void
   setShowImportModal: (show: boolean) => void
   setShowExportModal: (show: boolean) => void
   restoreDefaults: () => void
@@ -132,6 +156,37 @@ export const useAppStore = create<AppState>()(
         }
       })),
 
+      updateEmbalagem: (embalagem) => set((state) => ({
+        config: {
+          ...state.config,
+          embalagens: (state.config.embalagens || []).map((e) =>
+            e.id === embalagem.id ? embalagem : e
+          )
+        }
+      })),
+
+      addEmbalagem: (embalagem) => set((state) => {
+        const custoPorUnidade = embalagem.valorPacote / embalagem.quantidade
+        const newEmbalagem: Embalagem = {
+          ...embalagem,
+          id: Date.now().toString(),
+          custoPorUnidade
+        }
+        return {
+          config: {
+            ...state.config,
+            embalagens: [...(state.config.embalagens || []), newEmbalagem]
+          }
+        }
+      }),
+
+      deleteEmbalagem: (id) => set((state) => ({
+        config: {
+          ...state.config,
+          embalagens: (state.config.embalagens || []).filter((e) => e.id !== id)
+        }
+      })),
+
       updateEnergyConfig: (energia) => set((state) => ({
         config: {
           ...state.config,
@@ -176,7 +231,12 @@ export const useAppStore = create<AppState>()(
 
       restoreDefaults: () => set({ config: defaultConfig }),
 
-      importConfig: (config) => set({ config }),
+      importConfig: (config) => set({
+        config: {
+          ...config,
+          embalagens: config.embalagens || []
+        }
+      }),
 
       calculateResult: () => {
         const state = get()
@@ -190,6 +250,7 @@ export const useAppStore = create<AppState>()(
             custoEnergia: 0,
             desgasteImpressora: 0,
             maoDeObra: 0,
+            custoEmbalagem: 0,
             custoTotal: 0,
             lucro: 0,
             precoFinal: 0
@@ -200,10 +261,11 @@ export const useAppStore = create<AppState>()(
         const tempoImpressao = printJob.tempoImpressaoHoras + (printJob.tempoImpressaoMinutos / 60)
         
         // Calculate post-processing time in hours
-        const tempoPosProcessamento = 
-          (printJob.tempoPinturaHoras + printJob.tempoPinturaMinutos / 60) +
-          (printJob.tempoMontagemHoras + printJob.tempoMontagemMinutos / 60) +
-          (printJob.tempoAcabamentoHoras + printJob.tempoAcabamentoMinutos / 60)
+        const tempoPosProcessamento = printJob.incluirPosProcessamento !== false
+          ? (printJob.tempoPinturaHoras + printJob.tempoPinturaMinutos / 60) +
+            (printJob.tempoMontagemHoras + printJob.tempoMontagemMinutos / 60) +
+            (printJob.tempoAcabamentoHoras + printJob.tempoAcabamentoMinutos / 60)
+          : 0
 
         // Calculate costs
         const custoFilamento = printJob.materialUtilizado * filament.custoPorGrama
@@ -217,8 +279,13 @@ export const useAppStore = create<AppState>()(
         // Labor: printing time (monitoring) + post-processing time
         const maoDeObra = (tempoImpressao * 0.1 + tempoPosProcessamento) * config.maoDeObra.valorHoraTrabalho
 
+        // Custo de embalagem
+        const embalagens = config.embalagens || []
+        const embalagem = embalagens.find(e => e.id === printJob.embalagemId)
+        const custoEmbalagem = (printJob.incluirEmbalagem && embalagem) ? embalagem.custoPorUnidade : 0
+
         // Total cost
-        const custoTotal = custoFilamento + custoEnergia + desgasteImpressora + maoDeObra
+        const custoTotal = custoFilamento + custoEnergia + desgasteImpressora + maoDeObra + custoEmbalagem
 
         // Profit margin
         const margemLucro = printJob.usarMargemPadrao 
@@ -234,6 +301,7 @@ export const useAppStore = create<AppState>()(
           custoEnergia,
           desgasteImpressora,
           maoDeObra,
+          custoEmbalagem,
           custoTotal,
           lucro,
           precoFinal

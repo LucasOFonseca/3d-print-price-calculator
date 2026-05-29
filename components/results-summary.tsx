@@ -7,7 +7,8 @@ import {
   UserRound, 
   TrendingUp,
   Save,
-  RotateCcw
+  RotateCcw,
+  Package
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -54,6 +55,15 @@ export function ResultsSummary() {
       color: 'text-green-600'
     }
   ]
+
+  if (printJob.incluirEmbalagem && (result.custoEmbalagem || 0) > 0) {
+    costItems.push({
+      icon: Package,
+      label: 'Embalagem',
+      value: result.custoEmbalagem,
+      color: 'text-purple-600'
+    })
+  }
 
   return (
     <Card className="border-2 border-primary/20 bg-card shadow-lg">

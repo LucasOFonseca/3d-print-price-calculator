@@ -1,7 +1,8 @@
 "use client"
 
+import { useEffect, useState } from 'react'
 import { Header } from './header'
-import { PrintDataForm, PostProcessingForm } from './print-data-form'
+import { PrintDataForm, PostProcessingForm, PackagingForm } from './print-data-form'
 import { ProfitForm } from './profit-form'
 import { ResultsSummary } from './results-summary'
 import { SettingsScreen } from './settings-screen'
@@ -10,7 +11,21 @@ import { ExportModal } from './export-modal'
 import { useAppStore } from '@/lib/store'
 
 export function Calculator() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const { currentScreen, showImportModal, showExportModal, setShowImportModal, setShowExportModal } = useAppStore()
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -23,6 +38,7 @@ export function Calculator() {
             <div className="space-y-6">
               <PrintDataForm />
               <PostProcessingForm />
+              <PackagingForm />
             </div>
 
             {/* Right column - Profit & Results */}

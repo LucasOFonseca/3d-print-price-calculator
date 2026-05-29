@@ -6,7 +6,8 @@ import {
   Zap, 
   Printer, 
   UserRound, 
-  TrendingUp 
+  TrendingUp,
+  Package
 } from 'lucide-react'
 import {
   Dialog,
@@ -48,6 +49,11 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
       icon: Spool,
       label: 'Quantidade de Filamentos',
       value: `${config.filamentos.length} filamento${config.filamentos.length !== 1 ? 's' : ''}`
+    },
+    {
+      icon: Package,
+      label: 'Quantidade de Embalagens',
+      value: `${(config.embalagens || []).length} embalage${(config.embalagens || []).length !== 1 ? 'ns' : 'm'}`
     },
     {
       icon: Zap,
