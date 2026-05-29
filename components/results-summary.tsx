@@ -129,11 +129,11 @@ export function ResultsSummary() {
 
         {/* Action buttons */}
         <div className="flex flex-col gap-2 pt-2 sm:flex-row">
-          <Button className="flex-1" size="lg">
+          <Button className="flex-1 min-h-10" size="lg">
             <Save className="mr-2 h-4 w-4" />
             Salvar Orçamento
           </Button>
-          <Button variant="outline" size="lg" onClick={resetPrintJob} className="flex-1">
+          <Button variant="outline" size="lg" onClick={resetPrintJob} className="flex-1 min-h-10">
             <RotateCcw className="mr-2 h-4 w-4" />
             Novo Cálculo
           </Button>
