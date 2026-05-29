@@ -48,32 +48,32 @@ export function ExportModal({ open, onOpenChange }: ExportModalProps) {
     {
       icon: Spool,
       label: 'Quantidade de Filamentos',
-      value: `${config.filamentos.length} filamento${config.filamentos.length !== 1 ? 's' : ''}`
+      value: `${config.filaments.length} filamento${config.filaments.length !== 1 ? 's' : ''}`
     },
     {
       icon: Package,
       label: 'Quantidade de Embalagens',
-      value: `${(config.embalagens || []).length} embalage${(config.embalagens || []).length !== 1 ? 'ns' : 'm'}`
+      value: `${(config.packaging || []).length} embalage${(config.packaging || []).length !== 1 ? 'ns' : 'm'}`
     },
     {
       icon: Zap,
       label: 'Configurações de Energia',
-      value: `R$ ${config.energia.valorKwh}/kWh, ${config.energia.consumoImpressora}W`
+      value: `R$ ${config.energy.kwhPrice}/kWh, ${config.energy.printerConsumption}W`
     },
     {
       icon: Printer,
       label: 'Configurações de Impressora',
-      value: `R$ ${config.impressora.custoDesgastePorHora}/h de desgaste`
+      value: `R$ ${config.printer.wearCostPerHour}/h de desgaste`
     },
     {
       icon: UserRound,
       label: 'Configurações de Mão de Obra',
-      value: `R$ ${config.maoDeObra.valorHoraTrabalho}/h`
+      value: `R$ ${config.labor.hourlyRate}/h`
     },
     {
       icon: TrendingUp,
       label: 'Configurações de Lucro',
-      value: `${config.lucro.margemLucroPadrao}% de margem padrão`
+      value: `${config.profit.defaultProfitMargin}% de margem padrão`
     }
   ]
 

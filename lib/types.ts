@@ -1,81 +1,81 @@
 export interface Filament {
   id: string
-  nome: string
-  pesoRolo: number // em gramas
-  valorRolo: number // em R$
-  custoPorGrama: number // calculado
+  name: string
+  spoolWeight: number // in grams
+  spoolPrice: number // in R$
+  costPerGram: number // calculated
 }
 
-export interface Embalagem {
+export interface Packaging {
   id: string
-  nome: string
-  quantidade: number // unidades no pacote
-  valorPacote: number // valor do pacote em R$
-  custoPorUnidade: number // calculado
+  name: string
+  quantity: number // units per package
+  packagePrice: number // package price in R$
+  costPerUnit: number // calculated
 }
 
 export interface EnergyConfig {
-  valorKwh: number // R$ por kWh
-  consumoImpressora: number // Watts
+  kwhPrice: number // R$ per kWh
+  printerConsumption: number // Watts
 }
 
 export interface PrinterConfig {
-  custoDesgastePorHora: number // R$
+  wearCostPerHour: number // R$
 }
 
 export interface LaborConfig {
-  valorHoraTrabalho: number // R$
+  hourlyRate: number // R$
 }
 
 export interface ProfitConfig {
-  margemLucroPadrao: number // percentual
+  defaultProfitMargin: number // percentage
 }
 
 export interface PrintJob {
-  filamentoId: string
-  materialUtilizado: number // gramas
-  tempoImpressaoHoras: number
-  tempoImpressaoMinutos: number
-  tempoPinturaHoras: number
-  tempoPinturaMinutos: number
-  tempoMontagemHoras: number
-  tempoMontagemMinutos: number
-  tempoAcabamentoHoras: number
-  tempoAcabamentoMinutos: number
-  usarMargemPadrao: boolean
-  margemLucro: number
-  observacoes: string
-  incluirPosProcessamento: boolean
-  embalagemId: string
-  incluirEmbalagem: boolean
+  filamentId: string
+  materialUsed: number // grams
+  printTimeHours: number
+  printTimeMinutes: number
+  paintTimeHours: number
+  paintTimeMinutes: number
+  assemblyTimeHours: number
+  assemblyTimeMinutes: number
+  finishingTimeHours: number
+  finishingTimeMinutes: number
+  useDefaultMargin: boolean
+  profitMargin: number
+  notes: string
+  includePostProcessing: boolean
+  packagingId: string
+  includePackaging: boolean
 }
 
 export interface CalculationResult {
-  custoFilamento: number
-  custoEnergia: number
-  desgasteImpressora: number
-  maoDeObra: number
-  custoEmbalagem: number
-  custoTotal: number
-  lucro: number
-  precoFinal: number
+  filamentCost: number
+  energyCost: number
+  printerWear: number
+  laborCost: number
+  packagingCost: number
+  totalCost: number
+  profit: number
+  finalPrice: number
 }
 
-export interface Orcamento {
+export interface Quote {
   id: string
-  nome: string
-  data: string
+  name: string
+  date: string
   printJob: PrintJob
   result: CalculationResult
 }
 
 export interface AppConfig {
-  filamentos: Filament[]
-  embalagens?: Embalagem[]
-  energia: EnergyConfig
-  impressora: PrinterConfig
-  maoDeObra: LaborConfig
-  lucro: ProfitConfig
+  filaments: Filament[]
+  packaging?: Packaging[]
+  energy: EnergyConfig
+  printer: PrinterConfig
+  labor: LaborConfig
+  profit: ProfitConfig
 }
 
-export type SettingsTab = 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro' | 'embalagens'
+export type SettingsTab = 'filaments' | 'energy' | 'printer' | 'labor' | 'profit' | 'packaging'

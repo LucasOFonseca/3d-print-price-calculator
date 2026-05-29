@@ -2,119 +2,119 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppConfig, Filament, PrintJob, CalculationResult, Embalagem, Orcamento } from './types'
+import type { AppConfig, Filament, PrintJob, CalculationResult, Packaging, Quote } from './types'
 
 const defaultFilaments: Filament[] = [
   {
     id: '1',
-    nome: 'PLA Branco',
-    pesoRolo: 1000,
-    valorRolo: 89.90,
-    custoPorGrama: 0.0899
+    name: 'PLA Branco',
+    spoolWeight: 1000,
+    spoolPrice: 89.90,
+    costPerGram: 0.0899
   },
   {
     id: '2',
-    nome: 'PLA Preto',
-    pesoRolo: 1000,
-    valorRolo: 89.90,
-    custoPorGrama: 0.0899
+    name: 'PLA Preto',
+    spoolWeight: 1000,
+    spoolPrice: 89.90,
+    costPerGram: 0.0899
   },
   {
     id: '3',
-    nome: 'PETG Azul',
-    pesoRolo: 1000,
-    valorRolo: 119.90,
-    custoPorGrama: 0.1199
+    name: 'PETG Azul',
+    spoolWeight: 1000,
+    spoolPrice: 119.90,
+    costPerGram: 0.1199
   }
 ]
 
-const defaultEmbalagens: Embalagem[] = [
+const defaultPackaging: Packaging[] = [
   {
     id: '1',
-    nome: 'Caixa de Papelão Padrão',
-    quantidade: 10,
-    valorPacote: 35.00,
-    custoPorUnidade: 3.50
+    name: 'Caixa de Papelão Padrão',
+    quantity: 10,
+    packagePrice: 35.00,
+    costPerUnit: 3.50
   },
   {
     id: '2',
-    nome: 'Saco Bolha Grande',
-    quantidade: 50,
-    valorPacote: 45.00,
-    custoPorUnidade: 0.90
+    name: 'Saco Bolha Grande',
+    quantity: 50,
+    packagePrice: 45.00,
+    costPerUnit: 0.90
   }
 ]
 
 const defaultConfig: AppConfig = {
-  filamentos: defaultFilaments,
-  embalagens: defaultEmbalagens,
-  energia: {
-    valorKwh: 0.85,
-    consumoImpressora: 150
+  filaments: defaultFilaments,
+  packaging: defaultPackaging,
+  energy: {
+    kwhPrice: 0.85,
+    printerConsumption: 150
   },
-  impressora: {
-    custoDesgastePorHora: 1.50
+  printer: {
+    wearCostPerHour: 1.50
   },
-  maoDeObra: {
-    valorHoraTrabalho: 30.00
+  labor: {
+    hourlyRate: 30.00
   },
-  lucro: {
-    margemLucroPadrao: 35
+  profit: {
+    defaultProfitMargin: 35
   }
 }
 
 const defaultPrintJob: PrintJob = {
-  filamentoId: '1',
-  materialUtilizado: 250,
-  tempoImpressaoHoras: 12,
-  tempoImpressaoMinutos: 30,
-  tempoPinturaHoras: 1,
-  tempoPinturaMinutos: 0,
-  tempoMontagemHoras: 0,
-  tempoMontagemMinutos: 30,
-  tempoAcabamentoHoras: 0,
-  tempoAcabamentoMinutos: 45,
-  usarMargemPadrao: true,
-  margemLucro: 35,
-  observacoes: '',
-  incluirPosProcessamento: true,
-  embalagemId: '1',
-  incluirEmbalagem: false
+  filamentId: '1',
+  materialUsed: 250,
+  printTimeHours: 12,
+  printTimeMinutes: 30,
+  paintTimeHours: 1,
+  paintTimeMinutes: 0,
+  assemblyTimeHours: 0,
+  assemblyTimeMinutes: 30,
+  finishingTimeHours: 0,
+  finishingTimeMinutes: 45,
+  useDefaultMargin: true,
+  profitMargin: 35,
+  notes: '',
+  includePostProcessing: true,
+  packagingId: '1',
+  includePackaging: false
 }
 
 interface AppState {
   config: AppConfig
   printJob: PrintJob
   currentScreen: 'calculator' | 'settings'
-  settingsTab: 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro' | 'embalagens'
+  settingsTab: 'filaments' | 'energy' | 'printer' | 'labor' | 'profit' | 'packaging'
   showImportModal: boolean
   showExportModal: boolean
-  orcamentos: Orcamento[]
+  quotes: Quote[]
   
   // Actions
   setConfig: (config: AppConfig) => void
   updateFilament: (filament: Filament) => void
-  addFilament: (filament: Omit<Filament, 'id' | 'custoPorGrama'>) => void
+  addFilament: (filament: Omit<Filament, 'id' | 'costPerGram'>) => void
   deleteFilament: (id: string) => void
-  updateEmbalagem: (embalagem: Embalagem) => void
-  addEmbalagem: (embalagem: Omit<Embalagem, 'id' | 'custoPorUnidade'>) => void
-  deleteEmbalagem: (id: string) => void
-  updateEnergyConfig: (config: Partial<AppConfig['energia']>) => void
-  updatePrinterConfig: (config: Partial<AppConfig['impressora']>) => void
-  updateLaborConfig: (config: Partial<AppConfig['maoDeObra']>) => void
-  updateProfitConfig: (config: Partial<AppConfig['lucro']>) => void
+  updatePackaging: (packaging: Packaging) => void
+  addPackaging: (packaging: Omit<Packaging, 'id' | 'costPerUnit'>) => void
+  deletePackaging: (id: string) => void
+  updateEnergyConfig: (config: Partial<AppConfig['energy']>) => void
+  updatePrinterConfig: (config: Partial<AppConfig['printer']>) => void
+  updateLaborConfig: (config: Partial<AppConfig['labor']>) => void
+  updateProfitConfig: (config: Partial<AppConfig['profit']>) => void
   setPrintJob: (job: Partial<PrintJob>) => void
   resetPrintJob: () => void
   setCurrentScreen: (screen: 'calculator' | 'settings') => void
-  setSettingsTab: (tab: 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro' | 'embalagens') => void
+  setSettingsTab: (tab: 'filaments' | 'energy' | 'printer' | 'labor' | 'profit' | 'packaging') => void
   setShowImportModal: (show: boolean) => void
   setShowExportModal: (show: boolean) => void
   restoreDefaults: () => void
   importConfig: (config: AppConfig) => void
   calculateResult: () => CalculationResult
-  salvarOrcamento: (nome: string) => void
-  loadOrcamento: (id: string) => void
-  deleteOrcamento: (id: string) => void
+  saveQuote: (name: string) => void
+  loadQuote: (id: string) => void
+  deleteQuote: (id: string) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -123,33 +123,33 @@ export const useAppStore = create<AppState>()(
       config: defaultConfig,
       printJob: defaultPrintJob,
       currentScreen: 'calculator',
-      settingsTab: 'filamentos',
+      settingsTab: 'filaments',
       showImportModal: false,
       showExportModal: false,
-      orcamentos: [],
+      quotes: [],
 
       setConfig: (config) => set({ config }),
       
       updateFilament: (filament) => set((state) => ({
         config: {
           ...state.config,
-          filamentos: state.config.filamentos.map((f) =>
+          filaments: state.config.filaments.map((f) =>
             f.id === filament.id ? filament : f
           )
         }
       })),
 
       addFilament: (filament) => set((state) => {
-        const custoPorGrama = filament.valorRolo / filament.pesoRolo
+        const costPerGram = filament.spoolPrice / filament.spoolWeight
         const newFilament: Filament = {
           ...filament,
           id: Date.now().toString(),
-          custoPorGrama
+          costPerGram
         }
         return {
           config: {
             ...state.config,
-            filamentos: [...state.config.filamentos, newFilament]
+            filaments: [...state.config.filaments, newFilament]
           }
         }
       }),
@@ -157,66 +157,66 @@ export const useAppStore = create<AppState>()(
       deleteFilament: (id) => set((state) => ({
         config: {
           ...state.config,
-          filamentos: state.config.filamentos.filter((f) => f.id !== id)
+          filaments: state.config.filaments.filter((f) => f.id !== id)
         }
       })),
 
-      updateEmbalagem: (embalagem) => set((state) => ({
+      updatePackaging: (packaging) => set((state) => ({
         config: {
           ...state.config,
-          embalagens: (state.config.embalagens || []).map((e) =>
-            e.id === embalagem.id ? embalagem : e
+          packaging: (state.config.packaging || []).map((p) =>
+            p.id === packaging.id ? packaging : p
           )
         }
       })),
 
-      addEmbalagem: (embalagem) => set((state) => {
-        const custoPorUnidade = embalagem.valorPacote / embalagem.quantidade
-        const newEmbalagem: Embalagem = {
-          ...embalagem,
+      addPackaging: (packaging) => set((state) => {
+        const costPerUnit = packaging.packagePrice / packaging.quantity
+        const newPackaging: Packaging = {
+          ...packaging,
           id: Date.now().toString(),
-          custoPorUnidade
+          costPerUnit
         }
         return {
           config: {
             ...state.config,
-            embalagens: [...(state.config.embalagens || []), newEmbalagem]
+            packaging: [...(state.config.packaging || []), newPackaging]
           }
         }
       }),
 
-      deleteEmbalagem: (id) => set((state) => ({
+      deletePackaging: (id) => set((state) => ({
         config: {
           ...state.config,
-          embalagens: (state.config.embalagens || []).filter((e) => e.id !== id)
+          packaging: (state.config.packaging || []).filter((p) => p.id !== id)
         }
       })),
 
-      updateEnergyConfig: (energia) => set((state) => ({
+      updateEnergyConfig: (energy) => set((state) => ({
         config: {
           ...state.config,
-          energia: { ...state.config.energia, ...energia }
+          energy: { ...state.config.energy, ...energy }
         }
       })),
 
-      updatePrinterConfig: (impressora) => set((state) => ({
+      updatePrinterConfig: (printer) => set((state) => ({
         config: {
           ...state.config,
-          impressora: { ...state.config.impressora, ...impressora }
+          printer: { ...state.config.printer, ...printer }
         }
       })),
 
-      updateLaborConfig: (maoDeObra) => set((state) => ({
+      updateLaborConfig: (labor) => set((state) => ({
         config: {
           ...state.config,
-          maoDeObra: { ...state.config.maoDeObra, ...maoDeObra }
+          labor: { ...state.config.labor, ...labor }
         }
       })),
 
-      updateProfitConfig: (lucro) => set((state) => ({
+      updateProfitConfig: (profit) => set((state) => ({
         config: {
           ...state.config,
-          lucro: { ...state.config.lucro, ...lucro }
+          profit: { ...state.config.profit, ...profit }
         }
       })),
 
@@ -239,7 +239,7 @@ export const useAppStore = create<AppState>()(
       importConfig: (config) => set({
         config: {
           ...config,
-          embalagens: config.embalagens || []
+          packaging: config.packaging || []
         }
       }),
 
@@ -248,99 +248,99 @@ export const useAppStore = create<AppState>()(
         const { config, printJob } = state
         
         // Find selected filament
-        const filament = config.filamentos.find(f => f.id === printJob.filamentoId)
+        const filament = config.filaments.find(f => f.id === printJob.filamentId)
         if (!filament) {
           return {
-            custoFilamento: 0,
-            custoEnergia: 0,
-            desgasteImpressora: 0,
-            maoDeObra: 0,
-            custoEmbalagem: 0,
-            custoTotal: 0,
-            lucro: 0,
-            precoFinal: 0
+            filamentCost: 0,
+            energyCost: 0,
+            printerWear: 0,
+            laborCost: 0,
+            packagingCost: 0,
+            totalCost: 0,
+            profit: 0,
+            finalPrice: 0
           }
         }
 
         // Calculate printing time in hours
-        const tempoImpressao = printJob.tempoImpressaoHoras + (printJob.tempoImpressaoMinutos / 60)
+        const printTime = printJob.printTimeHours + (printJob.printTimeMinutes / 60)
         
         // Calculate post-processing time in hours
-        const tempoPosProcessamento = printJob.incluirPosProcessamento !== false
-          ? (printJob.tempoPinturaHoras + printJob.tempoPinturaMinutos / 60) +
-            (printJob.tempoMontagemHoras + printJob.tempoMontagemMinutos / 60) +
-            (printJob.tempoAcabamentoHoras + printJob.tempoAcabamentoMinutos / 60)
+        const postProcessingTime = printJob.includePostProcessing !== false
+          ? (printJob.paintTimeHours + printJob.paintTimeMinutes / 60) +
+            (printJob.assemblyTimeHours + printJob.assemblyTimeMinutes / 60) +
+            (printJob.finishingTimeHours + printJob.finishingTimeMinutes / 60)
           : 0
 
         // Calculate costs
-        const custoFilamento = printJob.materialUtilizado * filament.custoPorGrama
+        const filamentCost = printJob.materialUsed * filament.costPerGram
         
         // Energy cost: (W / 1000) * hours * R$/kWh
-        const custoEnergia = (config.energia.consumoImpressora / 1000) * tempoImpressao * config.energia.valorKwh
+        const energyCost = (config.energy.printerConsumption / 1000) * printTime * config.energy.kwhPrice
         
         // Printer depreciation
-        const desgasteImpressora = tempoImpressao * config.impressora.custoDesgastePorHora
+        const printerWear = printTime * config.printer.wearCostPerHour
         
         // Labor: printing time (monitoring) + post-processing time
-        const maoDeObra = (tempoImpressao * 0.1 + tempoPosProcessamento) * config.maoDeObra.valorHoraTrabalho
+        const laborCost = (printTime * 0.1 + postProcessingTime) * config.labor.hourlyRate
 
-        // Custo de embalagem
-        const embalagens = config.embalagens || []
-        const embalagem = embalagens.find(e => e.id === printJob.embalagemId)
-        const custoEmbalagem = (printJob.incluirEmbalagem && embalagem) ? embalagem.custoPorUnidade : 0
+        // Packaging cost
+        const packagingList = config.packaging || []
+        const pkg = packagingList.find(p => p.id === printJob.packagingId)
+        const packagingCost = (printJob.includePackaging && pkg) ? pkg.costPerUnit : 0
 
         // Total cost
-        const custoTotal = custoFilamento + custoEnergia + desgasteImpressora + maoDeObra + custoEmbalagem
+        const totalCost = filamentCost + energyCost + printerWear + laborCost + packagingCost
 
         // Profit margin
-        const margemLucro = printJob.usarMargemPadrao 
-          ? config.lucro.margemLucroPadrao 
-          : printJob.margemLucro
+        const profitMargin = printJob.useDefaultMargin 
+          ? config.profit.defaultProfitMargin 
+          : printJob.profitMargin
 
         // Final calculations
-        const lucro = custoTotal * (margemLucro / 100)
-        const precoFinal = custoTotal + lucro
+        const profit = totalCost * (profitMargin / 100)
+        const finalPrice = totalCost + profit
 
         return {
-          custoFilamento,
-          custoEnergia,
-          desgasteImpressora,
-          maoDeObra,
-          custoEmbalagem,
-          custoTotal,
-          lucro,
-          precoFinal
+          filamentCost,
+          energyCost,
+          printerWear,
+          laborCost,
+          packagingCost,
+          totalCost,
+          profit,
+          finalPrice
         }
       },
 
-      salvarOrcamento: (nome: string) => {
+      saveQuote: (name: string) => {
         const state = get()
         const result = state.calculateResult()
         
-        const novoOrcamento: Orcamento = {
+        const newQuote: Quote = {
           id: Date.now().toString(),
-          nome,
-          data: new Date().toISOString(),
+          name,
+          date: new Date().toISOString(),
           printJob: { ...state.printJob },
           result
         }
 
         set((state) => ({
-          orcamentos: [novoOrcamento, ...(state.orcamentos || [])]
+          quotes: [newQuote, ...(state.quotes || [])]
         }))
 
         state.resetPrintJob()
       },
 
-      deleteOrcamento: (id: string) => set((state) => ({
-        orcamentos: (state.orcamentos || []).filter((o) => o.id !== id)
+      deleteQuote: (id: string) => set((state) => ({
+        quotes: (state.quotes || []).filter((q) => q.id !== id)
       })),
 
-      loadOrcamento: (id: string) => {
+      loadQuote: (id: string) => {
         const state = get()
-        const orcamento = (state.orcamentos || []).find((o) => o.id === id)
-        if (orcamento) {
-          set({ printJob: { ...orcamento.printJob } })
+        const quote = (state.quotes || []).find((q) => q.id === id)
+        if (quote) {
+          set({ printJob: { ...quote.printJob } })
         }
       }
     }),
@@ -349,7 +349,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({ 
         config: state.config,
         printJob: state.printJob,
-        orcamentos: state.orcamentos
+        quotes: state.quotes
       })
     }
   )

@@ -19,16 +19,16 @@ import { Label } from '@/components/ui/label'
 import { useAppStore } from '@/lib/store'
 
 export function ResultsSummary() {
-  const { calculateResult, resetPrintJob, printJob, config, salvarOrcamento } = useAppStore()
+  const { calculateResult, resetPrintJob, printJob, config, saveQuote } = useAppStore()
   const result = calculateResult()
   const [showSaveDialog, setShowSaveDialog] = useState(false)
-  const [orcamentoNome, setOrcamentoNome] = useState('')
+  const [quoteName, setQuoteName] = useState('')
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault()
-    salvarOrcamento(orcamentoNome || `Orçamento ${new Date().toLocaleDateString()}`)
+    saveQuote(quoteName || `Orçamento ${new Date().toLocaleDateString()}`)
     setShowSaveDialog(false)
-    setOrcamentoNome('')
+    setQuoteName('')
   }
 
   const formatCurrency = (value: number) => {
@@ -38,42 +38,42 @@ export function ResultsSummary() {
     }).format(value)
   }
 
-  const margemAtual = printJob.usarMargemPadrao 
-    ? config.lucro.margemLucroPadrao 
-    : printJob.margemLucro
+  const currentMargin = printJob.useDefaultMargin 
+    ? config.profit.defaultProfitMargin 
+    : printJob.profitMargin
 
   const costItems = [
     {
       icon: Spool,
       label: 'Custo do Filamento',
-      value: result.custoFilamento,
+      value: result.filamentCost,
       color: 'text-blue-600'
     },
     {
       icon: Zap,
       label: 'Custo de Energia',
-      value: result.custoEnergia,
+      value: result.energyCost,
       color: 'text-yellow-600'
     },
     {
       icon: Printer,
       label: 'Desgaste da Impressora',
-      value: result.desgasteImpressora,
+      value: result.printerWear,
       color: 'text-gray-600'
     },
     {
       icon: UserRound,
       label: 'Mão de Obra',
-      value: result.maoDeObra,
+      value: result.laborCost,
       color: 'text-green-600'
     }
   ]
 
-  if (printJob.incluirEmbalagem && (result.custoEmbalagem || 0) > 0) {
+  if (printJob.includePackaging && (result.packagingCost || 0) > 0) {
     costItems.push({
       icon: Package,
       label: 'Embalagem',
-      value: result.custoEmbalagem,
+      value: result.packagingCost,
       color: 'text-purple-600'
     })
   }
@@ -112,7 +112,7 @@ export function ResultsSummary() {
           <div className="flex items-center justify-between py-2">
             <span className="text-sm font-medium text-muted-foreground">Custo Total</span>
             <span className="text-base font-semibold tabular-nums">
-              {formatCurrency(result.custoTotal)}
+              {formatCurrency(result.totalCost)}
             </span>
           </div>
 
@@ -121,11 +121,11 @@ export function ResultsSummary() {
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-muted-foreground">
-                Lucro ({margemAtual}%)
+                Lucro ({currentMargin}%)
               </span>
             </div>
             <span className="text-base font-semibold tabular-nums text-primary">
-              {formatCurrency(result.lucro)}
+              {formatCurrency(result.profit)}
             </span>
           </div>
         </div>
@@ -135,7 +135,7 @@ export function ResultsSummary() {
           <div className="text-center">
             <p className="text-sm font-medium text-primary-foreground/80">Preço Final</p>
             <p className="mt-1 text-3xl font-bold tracking-tight text-primary-foreground">
-              {formatCurrency(result.precoFinal)}
+              {formatCurrency(result.finalPrice)}
             </p>
           </div>
         </div>
@@ -163,8 +163,8 @@ export function ResultsSummary() {
                     <Input
                       id="name"
                       placeholder="Ex: Peça Cliente X"
-                      value={orcamentoNome}
-                      onChange={(e) => setOrcamentoNome(e.target.value)}
+                      value={quoteName}
+                      onChange={(e) => setQuoteName(e.target.value)}
                       autoFocus
                     />
                   </div>

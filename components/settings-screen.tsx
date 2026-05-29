@@ -47,7 +47,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useAppStore } from '@/lib/store'
-import type { Filament, Embalagem } from '@/lib/types'
+import type { Filament, Packaging } from '@/lib/types'
 
 export function SettingsScreen() {
   const { 
@@ -58,9 +58,9 @@ export function SettingsScreen() {
     updateFilament,
     addFilament,
     deleteFilament,
-    updateEmbalagem,
-    addEmbalagem,
-    deleteEmbalagem,
+    updatePackaging,
+    addPackaging,
+    deletePackaging,
     updateEnergyConfig,
     updatePrinterConfig,
     updateLaborConfig,
@@ -75,17 +75,17 @@ export function SettingsScreen() {
   }>({
     open: false,
     mode: 'add',
-    filament: { nome: '', pesoRolo: 1000, valorRolo: 0 }
+    filament: { name: '', spoolWeight: 1000, spoolPrice: 0 }
   })
 
-  const [embalagemModal, setEmbalagemModal] = useState<{
+  const [packagingModal, setPackagingModal] = useState<{
     open: boolean
     mode: 'add' | 'edit'
-    embalagem: Partial<Embalagem>
+    packaging: Partial<Packaging>
   }>({
     open: false,
     mode: 'add',
-    embalagem: { nome: '', quantidade: 10, valorPacote: 0 }
+    packaging: { name: '', quantity: 10, packagePrice: 0 }
   })
 
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -96,12 +96,12 @@ export function SettingsScreen() {
     filamentId: null
   })
 
-  const [deleteEmbalagemDialog, setDeleteEmbalagemDialog] = useState<{
+  const [deletePackagingDialog, setDeletePackagingDialog] = useState<{
     open: boolean
-    embalagemId: string | null
+    packagingId: string | null
   }>({
     open: false,
-    embalagemId: null
+    packagingId: null
   })
 
   const formatCurrency = (value: number) => {
@@ -113,29 +113,29 @@ export function SettingsScreen() {
 
   const handleSaveFilament = () => {
     const { filament, mode } = filamentModal
-    if (!filament.nome || !filament.pesoRolo || !filament.valorRolo) return
+    if (!filament.name || !filament.spoolWeight || !filament.spoolPrice) return
 
     if (mode === 'add') {
       addFilament({
-        nome: filament.nome,
-        pesoRolo: filament.pesoRolo,
-        valorRolo: filament.valorRolo
+        name: filament.name,
+        spoolWeight: filament.spoolWeight,
+        spoolPrice: filament.spoolPrice
       })
     } else if (filament.id) {
-      const custoPorGrama = filament.valorRolo / filament.pesoRolo
+      const costPerGram = filament.spoolPrice / filament.spoolWeight
       updateFilament({
         id: filament.id,
-        nome: filament.nome,
-        pesoRolo: filament.pesoRolo,
-        valorRolo: filament.valorRolo,
-        custoPorGrama
+        name: filament.name,
+        spoolWeight: filament.spoolWeight,
+        spoolPrice: filament.spoolPrice,
+        costPerGram
       })
     }
 
     setFilamentModal({
       open: false,
       mode: 'add',
-      filament: { nome: '', pesoRolo: 1000, valorRolo: 0 }
+      filament: { name: '', spoolWeight: 1000, spoolPrice: 0 }
     })
   }
 
@@ -146,47 +146,47 @@ export function SettingsScreen() {
     setDeleteDialog({ open: false, filamentId: null })
   }
 
-  const handleSaveEmbalagem = () => {
-    const { embalagem, mode } = embalagemModal
-    if (!embalagem.nome || !embalagem.quantidade || !embalagem.valorPacote) return
+  const handleSavePackaging = () => {
+    const { packaging, mode } = packagingModal
+    if (!packaging.name || !packaging.quantity || !packaging.packagePrice) return
 
     if (mode === 'add') {
-      addEmbalagem({
-        nome: embalagem.nome,
-        quantidade: embalagem.quantidade,
-        valorPacote: embalagem.valorPacote
+      addPackaging({
+        name: packaging.name,
+        quantity: packaging.quantity,
+        packagePrice: packaging.packagePrice
       })
-    } else if (embalagem.id) {
-      const custoPorUnidade = embalagem.valorPacote / embalagem.quantidade
-      updateEmbalagem({
-        id: embalagem.id,
-        nome: embalagem.nome,
-        quantidade: embalagem.quantidade,
-        valorPacote: embalagem.valorPacote,
-        custoPorUnidade
+    } else if (packaging.id) {
+      const costPerUnit = packaging.packagePrice / packaging.quantity
+      updatePackaging({
+        id: packaging.id,
+        name: packaging.name,
+        quantity: packaging.quantity,
+        packagePrice: packaging.packagePrice,
+        costPerUnit
       })
     }
 
-    setEmbalagemModal({
+    setPackagingModal({
       open: false,
       mode: 'add',
-      embalagem: { nome: '', quantidade: 10, valorPacote: 0 }
+      packaging: { name: '', quantity: 10, packagePrice: 0 }
     })
   }
 
-  const handleDeleteEmbalagem = () => {
-    if (deleteEmbalagemDialog.embalagemId) {
-      deleteEmbalagem(deleteEmbalagemDialog.embalagemId)
+  const handleDeletePackaging = () => {
+    if (deletePackagingDialog.packagingId) {
+      deletePackaging(deletePackagingDialog.packagingId)
     }
-    setDeleteEmbalagemDialog({ open: false, embalagemId: null })
+    setDeletePackagingDialog({ open: false, packagingId: null })
   }
 
-  const calculatedCostPerGram = filamentModal.filament.pesoRolo && filamentModal.filament.valorRolo
-    ? filamentModal.filament.valorRolo / filamentModal.filament.pesoRolo
+  const calculatedCostPerGram = filamentModal.filament.spoolWeight && filamentModal.filament.spoolPrice
+    ? filamentModal.filament.spoolPrice / filamentModal.filament.spoolWeight
     : 0
 
-  const calculatedCostPerUnit = embalagemModal.embalagem.quantidade && embalagemModal.embalagem.valorPacote
-    ? embalagemModal.embalagem.valorPacote / embalagemModal.embalagem.quantidade
+  const calculatedCostPerUnit = packagingModal.packaging.quantity && packagingModal.packaging.packagePrice
+    ? packagingModal.packaging.packagePrice / packagingModal.packaging.quantity
     : 0
 
   return (
@@ -211,38 +211,38 @@ export function SettingsScreen() {
 
       <Tabs value={settingsTab} onValueChange={(v) => setSettingsTab(v as typeof settingsTab)} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 gap-1 lg:grid-cols-6 h-auto p-1">
-          <TabsTrigger value="filamentos" className="flex items-center gap-2 text-xs sm:text-sm py-2">
+          <TabsTrigger value="filaments" className="flex items-center gap-2 text-xs sm:text-sm py-2">
             <Spool className="h-4 w-4" />
             <span className="hidden sm:inline">Filamentos</span>
             <span className="sm:hidden">Filam.</span>
           </TabsTrigger>
-          <TabsTrigger value="embalagens" className="flex items-center gap-2 text-xs sm:text-sm py-2">
+          <TabsTrigger value="packaging" className="flex items-center gap-2 text-xs sm:text-sm py-2">
             <Package className="h-4 w-4" />
             <span className="hidden sm:inline">Embalagens</span>
             <span className="sm:hidden">Emb.</span>
           </TabsTrigger>
-          <TabsTrigger value="energia" className="flex items-center gap-2 text-xs sm:text-sm py-2">
+          <TabsTrigger value="energy" className="flex items-center gap-2 text-xs sm:text-sm py-2">
             <Zap className="h-4 w-4" />
             Energia
           </TabsTrigger>
-          <TabsTrigger value="impressora" className="flex items-center gap-2 text-xs sm:text-sm py-2">
+          <TabsTrigger value="printer" className="flex items-center gap-2 text-xs sm:text-sm py-2">
             <Printer className="h-4 w-4" />
             <span className="hidden sm:inline">Impressora</span>
             <span className="sm:hidden">Impr.</span>
           </TabsTrigger>
-          <TabsTrigger value="mao-de-obra" className="flex items-center gap-2 text-xs sm:text-sm py-2">
+          <TabsTrigger value="labor" className="flex items-center gap-2 text-xs sm:text-sm py-2">
             <UserRound className="h-4 w-4" />
             <span className="hidden sm:inline">Mão de Obra</span>
             <span className="sm:hidden">M.O.</span>
           </TabsTrigger>
-          <TabsTrigger value="lucro" className="flex items-center gap-2 text-xs sm:text-sm py-2 col-span-2 lg:col-span-1">
+          <TabsTrigger value="profit" className="flex items-center gap-2 text-xs sm:text-sm py-2 col-span-2 lg:col-span-1">
             <TrendingUp className="h-4 w-4" />
             Lucro
           </TabsTrigger>
         </TabsList>
 
         {/* Filamentos Tab */}
-        <TabsContent value="filamentos" className="space-y-4">
+        <TabsContent value="filaments" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -258,7 +258,7 @@ export function SettingsScreen() {
                 onClick={() => setFilamentModal({
                   open: true,
                   mode: 'add',
-                  filament: { nome: '', pesoRolo: 1000, valorRolo: 0 }
+                  filament: { name: '', spoolWeight: 1000, spoolPrice: 0 }
                 })}
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -278,12 +278,12 @@ export function SettingsScreen() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {config.filamentos.map((filament) => (
+                    {config.filaments.map((filament) => (
                       <TableRow key={filament.id}>
-                        <TableCell className="font-medium">{filament.nome}</TableCell>
-                        <TableCell className="text-right">{filament.pesoRolo}g</TableCell>
-                        <TableCell className="text-right">{formatCurrency(filament.valorRolo)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(filament.custoPorGrama)}</TableCell>
+                        <TableCell className="font-medium">{filament.name}</TableCell>
+                        <TableCell className="text-right">{filament.spoolWeight}g</TableCell>
+                        <TableCell className="text-right">{formatCurrency(filament.spoolPrice)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(filament.costPerGram)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -319,7 +319,7 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Embalagens Tab */}
-        <TabsContent value="embalagens" className="space-y-4">
+        <TabsContent value="packaging" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -332,10 +332,10 @@ export function SettingsScreen() {
                 </CardDescription>
               </div>
               <Button 
-                onClick={() => setEmbalagemModal({
+                onClick={() => setPackagingModal({
                   open: true,
                   mode: 'add',
-                  embalagem: { nome: '', quantidade: 10, valorPacote: 0 }
+                  packaging: { name: '', quantity: 10, packagePrice: 0 }
                 })}
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -355,21 +355,21 @@ export function SettingsScreen() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(config.embalagens || []).map((embalagem) => (
-                      <TableRow key={embalagem.id}>
-                        <TableCell className="font-medium">{embalagem.nome}</TableCell>
-                        <TableCell className="text-right">{embalagem.quantidade} un</TableCell>
-                        <TableCell className="text-right">{formatCurrency(embalagem.valorPacote)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(embalagem.custoPorUnidade)}</TableCell>
+                    {(config.packaging || []).map((pkg) => (
+                      <TableRow key={pkg.id}>
+                        <TableCell className="font-medium">{pkg.name}</TableCell>
+                        <TableCell className="text-right">{pkg.quantity} un</TableCell>
+                        <TableCell className="text-right">{formatCurrency(pkg.packagePrice)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(pkg.costPerUnit)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => setEmbalagemModal({
+                              onClick={() => setPackagingModal({
                                 open: true,
                                 mode: 'edit',
-                                embalagem: { ...embalagem }
+                                packaging: { ...pkg }
                               })}
                             >
                               <Pencil className="h-4 w-4" />
@@ -377,9 +377,9 @@ export function SettingsScreen() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => setDeleteEmbalagemDialog({
+                              onClick={() => setDeletePackagingDialog({
                                 open: true,
-                                embalagemId: embalagem.id
+                                packagingId: pkg.id
                               })}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -396,7 +396,7 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Energia Tab */}
-        <TabsContent value="energia" className="space-y-4">
+        <TabsContent value="energy" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -416,8 +416,8 @@ export function SettingsScreen() {
                     type="number"
                     min="0"
                     step="0.01"
-                    value={config.energia.valorKwh}
-                    onChange={(e) => updateEnergyConfig({ valorKwh: parseFloat(e.target.value) || 0 })}
+                    value={config.energy.kwhPrice}
+                    onChange={(e) => updateEnergyConfig({ kwhPrice: parseFloat(e.target.value) || 0 })}
                   />
                   <p className="text-xs text-muted-foreground">
                     Consulte sua conta de luz para obter o valor correto
@@ -430,8 +430,8 @@ export function SettingsScreen() {
                     type="number"
                     min="0"
                     step="1"
-                    value={config.energia.consumoImpressora}
-                    onChange={(e) => updateEnergyConfig({ consumoImpressora: parseFloat(e.target.value) || 0 })}
+                    value={config.energy.printerConsumption}
+                    onChange={(e) => updateEnergyConfig({ printerConsumption: parseFloat(e.target.value) || 0 })}
                   />
                   <p className="text-xs text-muted-foreground">
                     Potência média de consumo durante a impressão
@@ -443,7 +443,7 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Impressora Tab */}
-        <TabsContent value="impressora" className="space-y-4">
+        <TabsContent value="printer" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -462,8 +462,8 @@ export function SettingsScreen() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={config.impressora.custoDesgastePorHora}
-                  onChange={(e) => updatePrinterConfig({ custoDesgastePorHora: parseFloat(e.target.value) || 0 })}
+                  value={config.printer.wearCostPerHour}
+                  onChange={(e) => updatePrinterConfig({ wearCostPerHour: parseFloat(e.target.value) || 0 })}
                   className="max-w-xs"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -476,7 +476,7 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Mão de Obra Tab */}
-        <TabsContent value="mao-de-obra" className="space-y-4">
+        <TabsContent value="labor" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -495,8 +495,8 @@ export function SettingsScreen() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={config.maoDeObra.valorHoraTrabalho}
-                  onChange={(e) => updateLaborConfig({ valorHoraTrabalho: parseFloat(e.target.value) || 0 })}
+                  value={config.labor.hourlyRate}
+                  onChange={(e) => updateLaborConfig({ hourlyRate: parseFloat(e.target.value) || 0 })}
                   className="max-w-xs"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -508,7 +508,7 @@ export function SettingsScreen() {
         </TabsContent>
 
         {/* Lucro Tab */}
-        <TabsContent value="lucro" className="space-y-4">
+        <TabsContent value="profit" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -529,8 +529,8 @@ export function SettingsScreen() {
                     min="0"
                     max="1000"
                     step="1"
-                    value={config.lucro.margemLucroPadrao}
-                    onChange={(e) => updateProfitConfig({ margemLucroPadrao: parseFloat(e.target.value) || 0 })}
+                    value={config.profit.defaultProfitMargin}
+                    onChange={(e) => updateProfitConfig({ defaultProfitMargin: parseFloat(e.target.value) || 0 })}
                     className="pr-8"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -579,10 +579,10 @@ export function SettingsScreen() {
                 <Input
                   id="filament-nome"
                   required
-                  value={filamentModal.filament.nome || ''}
+                  value={filamentModal.filament.name || ''}
                   onChange={(e) => setFilamentModal(prev => ({
                     ...prev,
-                    filament: { ...prev.filament, nome: e.target.value }
+                    filament: { ...prev.filament, name: e.target.value }
                   }))}
                   placeholder="Ex: PLA Branco"
                 />
@@ -594,10 +594,10 @@ export function SettingsScreen() {
                   type="number"
                   min="0"
                   required
-                  value={filamentModal.filament.pesoRolo || ''}
+                  value={filamentModal.filament.spoolWeight || ''}
                   onChange={(e) => setFilamentModal(prev => ({
                     ...prev,
-                    filament: { ...prev.filament, pesoRolo: parseFloat(e.target.value) || 0 }
+                    filament: { ...prev.filament, spoolWeight: parseFloat(e.target.value) || 0 }
                   }))}
                   placeholder="1000"
                 />
@@ -610,10 +610,10 @@ export function SettingsScreen() {
                   min="0"
                   step="0.01"
                   required
-                  value={filamentModal.filament.valorRolo || ''}
+                  value={filamentModal.filament.spoolPrice || ''}
                   onChange={(e) => setFilamentModal(prev => ({
                     ...prev,
-                    filament: { ...prev.filament, valorRolo: parseFloat(e.target.value) || 0 }
+                    filament: { ...prev.filament, spoolPrice: parseFloat(e.target.value) || 0 }
                   }))}
                   placeholder="89.90"
                 />
@@ -655,16 +655,16 @@ export function SettingsScreen() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Add/Edit Embalagem Modal */}
-      <Dialog open={embalagemModal.open} onOpenChange={(open) => setEmbalagemModal(prev => ({ ...prev, open }))}>
+      {/* Add/Edit Packaging Modal */}
+      <Dialog open={packagingModal.open} onOpenChange={(open) => setPackagingModal(prev => ({ ...prev, open }))}>
         <DialogContent className="sm:max-w-md">
-          <form onSubmit={(e) => { e.preventDefault(); handleSaveEmbalagem(); }}>
+          <form onSubmit={(e) => { e.preventDefault(); handleSavePackaging(); }}>
             <DialogHeader>
               <DialogTitle>
-                {embalagemModal.mode === 'add' ? 'Cadastrar Embalagem' : 'Editar Embalagem'}
+                {packagingModal.mode === 'add' ? 'Cadastrar Embalagem' : 'Editar Embalagem'}
               </DialogTitle>
               <DialogDescription>
-                {embalagemModal.mode === 'add' 
+                {packagingModal.mode === 'add' 
                   ? 'Adicione um novo tipo de embalagem ao sistema'
                   : 'Altere as informações da embalagem selecionada'
                 }
@@ -676,10 +676,10 @@ export function SettingsScreen() {
                 <Input
                   id="embalagem-nome"
                   required
-                  value={embalagemModal.embalagem.nome || ''}
-                  onChange={(e) => setEmbalagemModal(prev => ({
+                  value={packagingModal.packaging.name || ''}
+                  onChange={(e) => setPackagingModal(prev => ({
                     ...prev,
-                    embalagem: { ...prev.embalagem, nome: e.target.value }
+                    packaging: { ...prev.packaging, name: e.target.value }
                   }))}
                   placeholder="Ex: Caixa de Papelão Padrão"
                 />
@@ -691,10 +691,10 @@ export function SettingsScreen() {
                   type="number"
                   min="1"
                   required
-                  value={embalagemModal.embalagem.quantidade || ''}
-                  onChange={(e) => setEmbalagemModal(prev => ({
+                  value={packagingModal.packaging.quantity || ''}
+                  onChange={(e) => setPackagingModal(prev => ({
                     ...prev,
-                    embalagem: { ...prev.embalagem, quantidade: parseInt(e.target.value) || 0 }
+                    packaging: { ...prev.packaging, quantity: parseInt(e.target.value) || 0 }
                   }))}
                   placeholder="10"
                 />
@@ -707,10 +707,10 @@ export function SettingsScreen() {
                   min="0"
                   step="0.01"
                   required
-                  value={embalagemModal.embalagem.valorPacote || ''}
-                  onChange={(e) => setEmbalagemModal(prev => ({
+                  value={packagingModal.packaging.packagePrice || ''}
+                  onChange={(e) => setPackagingModal(prev => ({
                     ...prev,
-                    embalagem: { ...prev.embalagem, valorPacote: parseFloat(e.target.value) || 0 }
+                    packaging: { ...prev.packaging, packagePrice: parseFloat(e.target.value) || 0 }
                   }))}
                   placeholder="35.00"
                 />
@@ -723,7 +723,7 @@ export function SettingsScreen() {
               </div>
             </div>
             <DialogFooter className="gap-2 sm:gap-0">
-              <Button type="button" variant="outline" onClick={() => setEmbalagemModal(prev => ({ ...prev, open: false }))}>
+              <Button type="button" variant="outline" onClick={() => setPackagingModal(prev => ({ ...prev, open: false }))}>
                 Cancelar
               </Button>
               <Button type="submit">
@@ -734,8 +734,8 @@ export function SettingsScreen() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Embalagem Confirmation Dialog */}
-      <AlertDialog open={deleteEmbalagemDialog.open} onOpenChange={(open) => setDeleteEmbalagemDialog(prev => ({ ...prev, open }))}>
+      {/* Delete Packaging Confirmation Dialog */}
+      <AlertDialog open={deletePackagingDialog.open} onOpenChange={(open) => setDeletePackagingDialog(prev => ({ ...prev, open }))}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir Embalagem</AlertDialogTitle>
@@ -745,7 +745,7 @@ export function SettingsScreen() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteEmbalagem} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDeletePackaging} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

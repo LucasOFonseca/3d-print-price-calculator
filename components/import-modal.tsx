@@ -35,50 +35,50 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
     const c = config as Record<string, unknown>
     
     // Check required properties
-    if (!Array.isArray(c.filamentos)) return false
-    if (!c.energia || typeof c.energia !== 'object') return false
-    if (!c.impressora || typeof c.impressora !== 'object') return false
-    if (!c.maoDeObra || typeof c.maoDeObra !== 'object') return false
-    if (!c.lucro || typeof c.lucro !== 'object') return false
+    if (!Array.isArray(c.filaments)) return false
+    if (!c.energy || typeof c.energy !== 'object') return false
+    if (!c.printer || typeof c.printer !== 'object') return false
+    if (!c.labor || typeof c.labor !== 'object') return false
+    if (!c.profit || typeof c.profit !== 'object') return false
 
     // Validate filaments
-    for (const filament of c.filamentos) {
-      if (!filament.id || !filament.nome || typeof filament.pesoRolo !== 'number' || typeof filament.valorRolo !== 'number') {
+    for (const filament of c.filaments) {
+      if (!filament.id || !filament.name || typeof filament.spoolWeight !== 'number' || typeof filament.spoolPrice !== 'number') {
         return false
       }
     }
 
-    // Validate embalagens (optional for backward compatibility)
-    if (c.embalagens !== undefined) {
-      if (!Array.isArray(c.embalagens)) return false
-      for (const emb of c.embalagens) {
-        if (!emb.id || !emb.nome || typeof emb.quantidade !== 'number' || typeof emb.valorPacote !== 'number') {
+    // Validate packaging (optional for backward compatibility)
+    if (c.packaging !== undefined) {
+      if (!Array.isArray(c.packaging)) return false
+      for (const pkg of c.packaging) {
+        if (!pkg.id || !pkg.name || typeof pkg.quantity !== 'number' || typeof pkg.packagePrice !== 'number') {
           return false
         }
       }
     }
 
-    // Validate energia
-    const energia = c.energia as Record<string, unknown>
-    if (typeof energia.valorKwh !== 'number' || typeof energia.consumoImpressora !== 'number') {
+    // Validate energy
+    const energy = c.energy as Record<string, unknown>
+    if (typeof energy.kwhPrice !== 'number' || typeof energy.printerConsumption !== 'number') {
       return false
     }
 
-    // Validate impressora
-    const impressora = c.impressora as Record<string, unknown>
-    if (typeof impressora.custoDesgastePorHora !== 'number') {
+    // Validate printer
+    const printer = c.printer as Record<string, unknown>
+    if (typeof printer.wearCostPerHour !== 'number') {
       return false
     }
 
-    // Validate maoDeObra
-    const maoDeObra = c.maoDeObra as Record<string, unknown>
-    if (typeof maoDeObra.valorHoraTrabalho !== 'number') {
+    // Validate labor
+    const labor = c.labor as Record<string, unknown>
+    if (typeof labor.hourlyRate !== 'number') {
       return false
     }
 
-    // Validate lucro
-    const lucro = c.lucro as Record<string, unknown>
-    if (typeof lucro.margemLucroPadrao !== 'number') {
+    // Validate profit
+    const profit = c.profit as Record<string, unknown>
+    if (typeof profit.defaultProfitMargin !== 'number') {
       return false
     }
 
@@ -247,12 +247,12 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
             <div className="rounded-lg bg-muted/50 p-3">
               <p className="text-xs font-medium text-muted-foreground">Conteúdo do arquivo:</p>
               <ul className="mt-2 space-y-1 text-sm">
-                <li>{parsedConfig.filamentos.length} filamentos</li>
-                <li>{(parsedConfig.embalagens || []).length} embalagens</li>
+                <li>{parsedConfig.filaments.length} filamentos</li>
+                <li>{(parsedConfig.packaging || []).length} embalagens</li>
                 <li>Configurações de energia</li>
                 <li>Configurações de impressora</li>
                 <li>Configurações de mão de obra</li>
-                <li>Margem de lucro: {parsedConfig.lucro.margemLucroPadrao}%</li>
+                <li>Margem de lucro: {parsedConfig.profit.defaultProfitMargin}%</li>
               </ul>
             </div>
           )}

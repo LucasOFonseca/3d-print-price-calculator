@@ -28,23 +28,23 @@ export function ProfitForm() {
               Utilizar margem padrão
             </Label>
             <p className="text-xs text-muted-foreground">
-              Margem configurada: {config.lucro.margemLucroPadrao}%
+              Margem configurada: {config.profit.defaultProfitMargin}%
             </p>
           </div>
           <Switch
             id="usar-margem-padrao"
-            checked={printJob.usarMargemPadrao}
+            checked={printJob.useDefaultMargin}
             onCheckedChange={(checked) => {
               setPrintJob({ 
-                usarMargemPadrao: checked,
-                margemLucro: checked ? config.lucro.margemLucroPadrao : printJob.margemLucro
+                useDefaultMargin: checked,
+                profitMargin: checked ? config.profit.defaultProfitMargin : printJob.profitMargin
               })
             }}
           />
         </div>
 
         {/* Margem de lucro customizada */}
-        {!printJob.usarMargemPadrao && (
+        {!printJob.useDefaultMargin && (
           <div className="space-y-2">
             <Label htmlFor="margem-lucro">Margem de lucro (%)</Label>
             <div className="relative">
@@ -54,8 +54,8 @@ export function ProfitForm() {
                 min="0"
                 max="1000"
                 step="1"
-                value={printJob.margemLucro}
-                onChange={(e) => setPrintJob({ margemLucro: parseFloat(e.target.value) || 0 })}
+                value={printJob.profitMargin}
+                onChange={(e) => setPrintJob({ profitMargin: parseFloat(e.target.value) || 0 })}
                 className="pr-8"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">

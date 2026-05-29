@@ -25,7 +25,7 @@ import { TimeInput } from './time-input'
 export function PrintDataForm() {
   const { config, printJob, setPrintJob } = useAppStore()
 
-  const selectedFilament = config.filamentos.find(f => f.id === printJob.filamentoId)
+  const selectedFilament = config.filaments.find(f => f.id === printJob.filamentId)
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -49,16 +49,16 @@ export function PrintDataForm() {
           <div className="space-y-2">
             <Label htmlFor="filamento">Filamento</Label>
             <Select
-              value={printJob.filamentoId}
-              onValueChange={(value) => setPrintJob({ filamentoId: value })}
+              value={printJob.filamentId}
+              onValueChange={(value) => setPrintJob({ filamentId: value })}
             >
               <SelectTrigger id="filamento" className="w-full">
                 <SelectValue placeholder="Selecione um filamento" />
               </SelectTrigger>
               <SelectContent>
-                {config.filamentos.map((filament) => (
+                {config.filaments.map((filament) => (
                   <SelectItem key={filament.id} value={filament.id}>
-                    {filament.nome}
+                    {filament.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -69,15 +69,15 @@ export function PrintDataForm() {
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <span className="text-muted-foreground">Custo/g</span>
-                    <p className="font-medium">{formatCurrency(selectedFilament.custoPorGrama)}</p>
+                    <p className="font-medium">{formatCurrency(selectedFilament.costPerGram)}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Peso do rolo</span>
-                    <p className="font-medium">{selectedFilament.pesoRolo}g</p>
+                    <p className="font-medium">{selectedFilament.spoolWeight}g</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Valor do rolo</span>
-                    <p className="font-medium">{formatCurrency(selectedFilament.valorRolo)}</p>
+                    <p className="font-medium">{formatCurrency(selectedFilament.spoolPrice)}</p>
                   </div>
                 </div>
               </div>
@@ -92,8 +92,8 @@ export function PrintDataForm() {
               type="number"
               min="0"
               step="0.1"
-              value={printJob.materialUtilizado}
-              onChange={(e) => setPrintJob({ materialUtilizado: parseFloat(e.target.value) || 0 })}
+              value={printJob.materialUsed}
+              onChange={(e) => setPrintJob({ materialUsed: parseFloat(e.target.value) || 0 })}
               placeholder="250"
             />
           </div>
@@ -105,10 +105,10 @@ export function PrintDataForm() {
               Tempo de Impressão
             </Label>
             <TimeInput
-              hours={printJob.tempoImpressaoHoras}
-              minutes={printJob.tempoImpressaoMinutos}
-              onHoursChange={(hours) => setPrintJob({ tempoImpressaoHoras: hours })}
-              onMinutesChange={(minutes) => setPrintJob({ tempoImpressaoMinutos: minutes })}
+              hours={printJob.printTimeHours}
+              minutes={printJob.printTimeMinutes}
+              onHoursChange={(hours) => setPrintJob({ printTimeHours: hours })}
+              onMinutesChange={(minutes) => setPrintJob({ printTimeMinutes: minutes })}
             />
           </div>
       </CardContent>
@@ -119,7 +119,7 @@ export function PrintDataForm() {
 export function PostProcessingForm() {
   const { printJob, setPrintJob } = useAppStore()
 
-  const isEnabled = printJob.incluirPosProcessamento !== false
+  const isEnabled = printJob.includePostProcessing !== false
 
   return (
     <Card className={`border-border/50 shadow-sm transition-all duration-200 ${!isEnabled ? 'opacity-70' : ''}`}>
@@ -132,7 +132,7 @@ export function PostProcessingForm() {
         </CardTitle>
         <Switch
           checked={isEnabled}
-          onCheckedChange={(checked) => setPrintJob({ incluirPosProcessamento: checked })}
+          onCheckedChange={(checked) => setPrintJob({ includePostProcessing: checked })}
         />
       </CardHeader>
       <CardContent className="space-y-4">
@@ -145,10 +145,10 @@ export function PostProcessingForm() {
                 Pintura
               </Label>
               <TimeInput
-                hours={printJob.tempoPinturaHoras}
-                minutes={printJob.tempoPinturaMinutos}
-                onHoursChange={(hours) => setPrintJob({ tempoPinturaHoras: hours })}
-                onMinutesChange={(minutes) => setPrintJob({ tempoPinturaMinutos: minutes })}
+                hours={printJob.paintTimeHours}
+                minutes={printJob.paintTimeMinutes}
+                onHoursChange={(hours) => setPrintJob({ paintTimeHours: hours })}
+                onMinutesChange={(minutes) => setPrintJob({ paintTimeMinutes: minutes })}
               />
             </div>
 
@@ -159,10 +159,10 @@ export function PostProcessingForm() {
                 Montagem
               </Label>
               <TimeInput
-                hours={printJob.tempoMontagemHoras}
-                minutes={printJob.tempoMontagemMinutos}
-                onHoursChange={(hours) => setPrintJob({ tempoMontagemHoras: hours })}
-                onMinutesChange={(minutes) => setPrintJob({ tempoMontagemMinutos: minutes })}
+                hours={printJob.assemblyTimeHours}
+                minutes={printJob.assemblyTimeMinutes}
+                onHoursChange={(hours) => setPrintJob({ assemblyTimeHours: hours })}
+                onMinutesChange={(minutes) => setPrintJob({ assemblyTimeMinutes: minutes })}
               />
             </div>
 
@@ -173,10 +173,10 @@ export function PostProcessingForm() {
                 Acabamento
               </Label>
               <TimeInput
-                hours={printJob.tempoAcabamentoHoras}
-                minutes={printJob.tempoAcabamentoMinutos}
-                onHoursChange={(hours) => setPrintJob({ tempoAcabamentoHoras: hours })}
-                onMinutesChange={(minutes) => setPrintJob({ tempoAcabamentoMinutos: minutes })}
+                hours={printJob.finishingTimeHours}
+                minutes={printJob.finishingTimeMinutes}
+                onHoursChange={(hours) => setPrintJob({ finishingTimeHours: hours })}
+                onMinutesChange={(minutes) => setPrintJob({ finishingTimeMinutes: minutes })}
               />
             </div>
           </>
@@ -196,14 +196,14 @@ export function PostProcessingForm() {
 export function PackagingForm() {
   const { config, printJob, setPrintJob } = useAppStore()
 
-  const isEnabled = printJob.incluirEmbalagem === true
-  const embalagens = config.embalagens || []
+  const isEnabled = printJob.includePackaging === true
+  const packagingList = config.packaging || []
   
-  const activeEmbalagemId = printJob.embalagemId || (embalagens.length > 0 ? embalagens[0].id : '')
-  const selectedEmbalagem = embalagens.find(e => e.id === activeEmbalagemId)
+  const activePackagingId = printJob.packagingId || (packagingList.length > 0 ? packagingList[0].id : '')
+  const selectedPackaging = packagingList.find(p => p.id === activePackagingId)
 
   const handleSelectChange = (value: string) => {
-    setPrintJob({ embalagemId: value })
+    setPrintJob({ packagingId: value })
   }
 
   const formatCurrency = (value: number) => {
@@ -225,9 +225,9 @@ export function PackagingForm() {
         <Switch
           checked={isEnabled}
           onCheckedChange={(checked) => {
-            const nextJob: Partial<typeof printJob> = { incluirEmbalagem: checked }
-            if (checked && !printJob.embalagemId && embalagens.length > 0) {
-              nextJob.embalagemId = embalagens[0].id
+            const nextJob: Partial<typeof printJob> = { includePackaging: checked }
+            if (checked && !printJob.packagingId && packagingList.length > 0) {
+              nextJob.packagingId = packagingList[0].id
             }
             setPrintJob(nextJob)
           }}
@@ -237,38 +237,38 @@ export function PackagingForm() {
         {isEnabled ? (
           <div className="space-y-2">
             <Label htmlFor="embalagem">Selecionar Embalagem</Label>
-            {embalagens.length > 0 ? (
+            {packagingList.length > 0 ? (
               <>
                 <Select
-                  value={activeEmbalagemId}
+                  value={activePackagingId}
                   onValueChange={handleSelectChange}
                 >
                   <SelectTrigger id="embalagem" className="w-full">
                     <SelectValue placeholder="Selecione uma embalagem" />
                   </SelectTrigger>
                   <SelectContent>
-                    {embalagens.map((emb) => (
-                      <SelectItem key={emb.id} value={emb.id}>
-                        {emb.nome}
+                    {packagingList.map((pkg) => (
+                      <SelectItem key={pkg.id} value={pkg.id}>
+                        {pkg.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                {selectedEmbalagem && (
+                {selectedPackaging && (
                   <div className="mt-2 rounded-lg bg-muted/50 p-3">
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div>
                         <span className="text-muted-foreground">Custo/Unid</span>
-                        <p className="font-medium">{formatCurrency(selectedEmbalagem.custoPorUnidade)}</p>
+                        <p className="font-medium">{formatCurrency(selectedPackaging.costPerUnit)}</p>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Qtd Pacote</span>
-                        <p className="font-medium">{selectedEmbalagem.quantidade} un</p>
+                        <p className="font-medium">{selectedPackaging.quantity} un</p>
                       </div>
                       <div>
                         <span className="text-muted-foreground">Valor Pacote</span>
-                        <p className="font-medium">{formatCurrency(selectedEmbalagem.valorPacote)}</p>
+                        <p className="font-medium">{formatCurrency(selectedPackaging.packagePrice)}</p>
                       </div>
                     </div>
                   </div>

@@ -6,10 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/lib/store'
 
-export function SavedOrcamentos() {
-  const { orcamentos, deleteOrcamento, loadOrcamento, config } = useAppStore()
+export function SavedQuotes() {
+  const { quotes, deleteQuote, loadQuote, config } = useAppStore()
 
-  if (!orcamentos || orcamentos.length === 0) {
+  if (!quotes || quotes.length === 0) {
     return null
   }
 
@@ -30,16 +30,16 @@ export function SavedOrcamentos() {
     })
   }
 
-  const getFilamentoName = (id: string) => {
-    const filamento = config.filamentos.find(f => f.id === id)
-    return filamento ? filamento.nome : 'Desconhecido'
+  const getFilamentName = (id: string) => {
+    const filament = config.filaments.find(f => f.id === id)
+    return filament ? filament.name : 'Desconhecido'
   }
 
-  const formatTime = (horas: number, minutos: number) => {
-    if (horas > 0) {
-      return `${horas}h ${minutos}m`
+  const formatTime = (hours: number, minutes: number) => {
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`
     }
-    return `${minutos}m`
+    return `${minutes}m`
   }
 
   return (
@@ -63,25 +63,25 @@ export function SavedOrcamentos() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orcamentos.map((orcamento) => (
-                <TableRow key={orcamento.id}>
-                  <TableCell className="font-medium">{orcamento.nome}</TableCell>
-                  <TableCell>{formatDate(orcamento.data)}</TableCell>
-                  <TableCell>{getFilamentoName(orcamento.printJob.filamentoId)}</TableCell>
-                  <TableCell>{orcamento.printJob.materialUtilizado}g</TableCell>
+              {quotes.map((quote) => (
+                <TableRow key={quote.id}>
+                  <TableCell className="font-medium">{quote.name}</TableCell>
+                  <TableCell>{formatDate(quote.date)}</TableCell>
+                  <TableCell>{getFilamentName(quote.printJob.filamentId)}</TableCell>
+                  <TableCell>{quote.printJob.materialUsed}g</TableCell>
                   <TableCell>
-                    {formatTime(orcamento.printJob.tempoImpressaoHoras, orcamento.printJob.tempoImpressaoMinutos)}
+                    {formatTime(quote.printJob.printTimeHours, quote.printJob.printTimeMinutes)}
                   </TableCell>
-                  <TableCell>{formatCurrency(orcamento.result.custoTotal)}</TableCell>
+                  <TableCell>{formatCurrency(quote.result.totalCost)}</TableCell>
                   <TableCell className="font-bold text-primary">
-                    {formatCurrency(orcamento.result.precoFinal)}
+                    {formatCurrency(quote.result.finalPrice)}
                   </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => {
-                        loadOrcamento(orcamento.id)
+                        loadQuote(quote.id)
                         window.scrollTo({ top: 0, behavior: 'smooth' })
                       }}
                       className="text-primary hover:bg-primary/10 hover:text-primary"
@@ -92,7 +92,7 @@ export function SavedOrcamentos() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => deleteOrcamento(orcamento.id)}
+                      onClick={() => deleteQuote(quote.id)}
                       className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                       title="Excluir Orçamento"
                     >
