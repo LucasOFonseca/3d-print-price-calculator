@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from 'react'
 import { 
   Spool, 
   Zap, 
@@ -12,11 +13,23 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useAppStore } from '@/lib/store'
 
 export function ResultsSummary() {
-  const { calculateResult, resetPrintJob, printJob, config } = useAppStore()
+  const { calculateResult, resetPrintJob, printJob, config, salvarOrcamento } = useAppStore()
   const result = calculateResult()
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [orcamentoNome, setOrcamentoNome] = useState('')
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault()
+    salvarOrcamento(orcamentoNome || `Orçamento ${new Date().toLocaleDateString()}`)
+    setShowSaveDialog(false)
+    setOrcamentoNome('')
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -129,10 +142,39 @@ export function ResultsSummary() {
 
         {/* Action buttons */}
         <div className="flex flex-col gap-2 pt-2 sm:flex-row">
-          <Button className="flex-1 min-h-10" size="lg">
-            <Save className="mr-2 h-4 w-4" />
-            Salvar Orçamento
-          </Button>
+          <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+            <DialogTrigger asChild>
+              <Button className="flex-1 min-h-10" size="lg">
+                <Save className="mr-2 h-4 w-4" />
+                Salvar Orçamento
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <form onSubmit={handleSave}>
+                <DialogHeader>
+                  <DialogTitle>Salvar Orçamento</DialogTitle>
+                  <DialogDescription>
+                    Dê um nome para este orçamento para facilitar a identificação depois.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="name">Nome do orçamento</Label>
+                    <Input
+                      id="name"
+                      placeholder="Ex: Peça Cliente X"
+                      value={orcamentoNome}
+                      onChange={(e) => setOrcamentoNome(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Salvar</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
           <Button variant="outline" size="lg" onClick={resetPrintJob} className="flex-1 min-h-10">
             <RotateCcw className="mr-2 h-4 w-4" />
             Novo Cálculo

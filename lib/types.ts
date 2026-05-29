@@ -61,6 +61,14 @@ export interface CalculationResult {
   precoFinal: number
 }
 
+export interface Orcamento {
+  id: string
+  nome: string
+  data: string
+  printJob: PrintJob
+  result: CalculationResult
+}
+
 export interface AppConfig {
   filamentos: Filament[]
   embalagens?: Embalagem[]

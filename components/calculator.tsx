@@ -5,6 +5,7 @@ import { Header } from './header'
 import { PrintDataForm, PostProcessingForm, PackagingForm } from './print-data-form'
 import { ProfitForm } from './profit-form'
 import { ResultsSummary } from './results-summary'
+import { SavedOrcamentos } from './saved-orcamentos'
 import { SettingsScreen } from './settings-screen'
 import { ImportModal } from './import-modal'
 import { ExportModal } from './export-modal'
@@ -48,6 +49,10 @@ export function Calculator() {
                 <ResultsSummary />
               </div>
             </div>
+          </div>
+          
+          <div className="mt-8">
+            <SavedOrcamentos />
           </div>
         </main>
       ) : (

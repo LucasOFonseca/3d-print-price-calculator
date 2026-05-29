@@ -2,7 +2,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { AppConfig, Filament, PrintJob, CalculationResult, Embalagem } from './types'
+import type { AppConfig, Filament, PrintJob, CalculationResult, Embalagem, Orcamento } from './types'
 
 const defaultFilaments: Filament[] = [
   {
@@ -89,6 +89,7 @@ interface AppState {
   settingsTab: 'filamentos' | 'energia' | 'impressora' | 'mao-de-obra' | 'lucro' | 'embalagens'
   showImportModal: boolean
   showExportModal: boolean
+  orcamentos: Orcamento[]
   
   // Actions
   setConfig: (config: AppConfig) => void
@@ -111,6 +112,9 @@ interface AppState {
   restoreDefaults: () => void
   importConfig: (config: AppConfig) => void
   calculateResult: () => CalculationResult
+  salvarOrcamento: (nome: string) => void
+  loadOrcamento: (id: string) => void
+  deleteOrcamento: (id: string) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -122,6 +126,7 @@ export const useAppStore = create<AppState>()(
       settingsTab: 'filamentos',
       showImportModal: false,
       showExportModal: false,
+      orcamentos: [],
 
       setConfig: (config) => set({ config }),
       
@@ -306,13 +311,45 @@ export const useAppStore = create<AppState>()(
           lucro,
           precoFinal
         }
+      },
+
+      salvarOrcamento: (nome: string) => {
+        const state = get()
+        const result = state.calculateResult()
+        
+        const novoOrcamento: Orcamento = {
+          id: Date.now().toString(),
+          nome,
+          data: new Date().toISOString(),
+          printJob: { ...state.printJob },
+          result
+        }
+
+        set((state) => ({
+          orcamentos: [novoOrcamento, ...(state.orcamentos || [])]
+        }))
+
+        state.resetPrintJob()
+      },
+
+      deleteOrcamento: (id: string) => set((state) => ({
+        orcamentos: (state.orcamentos || []).filter((o) => o.id !== id)
+      })),
+
+      loadOrcamento: (id: string) => {
+        const state = get()
+        const orcamento = (state.orcamentos || []).find((o) => o.id === id)
+        if (orcamento) {
+          set({ printJob: { ...orcamento.printJob } })
+        }
       }
     }),
     {
       name: '3d-print-calculator-storage',
       partialize: (state) => ({ 
         config: state.config,
-        printJob: state.printJob 
+        printJob: state.printJob,
+        orcamentos: state.orcamentos
       })
     }
   )
