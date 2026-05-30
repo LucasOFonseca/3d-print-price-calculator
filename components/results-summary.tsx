@@ -19,8 +19,7 @@ import { Label } from '@/components/ui/label'
 import { useAppStore } from '@/lib/store'
 
 export function ResultsSummary() {
-  const { calculateResult, resetPrintJob, printJob, config, saveQuote } = useAppStore()
-  const result = calculateResult()
+  const { result, resetPrintJob, printJob, config, saveQuote } = useAppStore()
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [quoteName, setQuoteName] = useState('')
 

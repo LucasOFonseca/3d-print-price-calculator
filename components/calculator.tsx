@@ -10,15 +10,56 @@ import { SettingsScreen } from './settings-screen'
 import { ImportModal } from './import-modal'
 import { ExportModal } from './export-modal'
 import { useAppStore } from '@/lib/store'
+import { api } from '@/lib/api-client'
 
 export function Calculator() {
   const [mounted, setMounted] = useState(false)
+  const { 
+    currentScreen, 
+    showImportModal, 
+    showExportModal, 
+    setShowImportModal, 
+    setShowExportModal,
+    printJob,
+    config,
+    calculateResult
+  } = useAppStore()
 
   useEffect(() => {
-    setMounted(true)
+    async function hydrate() {
+      try {
+        const [configRes, quotesRes] = await Promise.all([
+          api.get('/config'),
+          api.get('/quotes'),
+        ])
+        const configData = configRes.data.data
+        const firstFilamentId = configData?.filaments?.[0]?.id
+        const firstPackagingId = configData?.packaging?.[0]?.id
+
+        useAppStore.setState({
+          config: configData,
+          quotes: quotesRes.data.data,
+          printJob: {
+            ...useAppStore.getState().printJob,
+            ...(firstFilamentId ? { filamentId: firstFilamentId } : {}),
+            ...(firstPackagingId ? { packagingId: firstPackagingId } : {}),
+          }
+        })
+      } catch (err) {
+        console.error('Hydration error:', err)
+      } finally {
+        setMounted(true)
+      }
+    }
+    hydrate()
   }, [])
 
-  const { currentScreen, showImportModal, showExportModal, setShowImportModal, setShowExportModal } = useAppStore()
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      calculateResult()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [printJob, config, calculateResult])
 
   if (!mounted) {
     return (
