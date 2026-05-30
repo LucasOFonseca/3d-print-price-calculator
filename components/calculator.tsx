@@ -54,12 +54,6 @@ export function Calculator() {
     hydrate()
   }, [])
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      calculateResult()
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [printJob, config, calculateResult])
 
   if (!mounted) {
     return (

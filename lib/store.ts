@@ -123,6 +123,9 @@ interface AppState {
   showExportModal: boolean;
   quotes: Quote[];
   result: CalculationResult;
+  isCalculating: boolean;
+  lastCalculatedPrintJob: PrintJob | null;
+  lastCalculatedConfig: AppConfig | null;
 
   // Actions
   setConfig: (config: AppConfig) => void;
@@ -229,6 +232,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   showExportModal: false,
   quotes: [],
   result: defaultResult,
+  isCalculating: false,
+  lastCalculatedPrintJob: null,
+  lastCalculatedConfig: null,
 
   setConfig: (config) => set({ config }),
 
@@ -347,7 +353,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       printJob: { ...state.printJob, ...job },
     })),
 
-  resetPrintJob: () => set({ printJob: defaultPrintJob }),
+  resetPrintJob: () =>
+    set({
+      printJob: defaultPrintJob,
+      lastCalculatedPrintJob: null,
+      lastCalculatedConfig: null,
+      result: defaultResult,
+    }),
 
   setCurrentScreen: (currentScreen) => set({ currentScreen }),
 
@@ -368,12 +380,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   calculateResult: async () => {
-    const { printJob } = get();
+    const { printJob, config } = get();
+    set({ isCalculating: true });
     try {
       const res = await api.post("/calculator/calculate", printJob);
-      set({ result: res.data.data });
+      set({
+        result: res.data.data,
+        lastCalculatedPrintJob: printJob,
+        lastCalculatedConfig: config,
+      });
     } catch (err) {
       console.error("Failed to calculate result:", err);
+    } finally {
+      set({ isCalculating: false });
     }
   },
 
@@ -405,9 +424,21 @@ export const useAppStore = create<AppState>((set, get) => ({
   loadQuote: async (id: string) => {
     try {
       const res = await api.post(`/quotes/${id}/load`);
-      set({ printJob: res.data.data });
+      const { filamentName, packagingName, ...loadedJob } = res.data.data;
+      set({ printJob: loadedJob });
+      // Calculate immediately so that the result is visible
+      const config = get().config;
+      set({ isCalculating: true });
+      const calcRes = await api.post("/calculator/calculate", loadedJob);
+      set({
+        result: calcRes.data.data,
+        lastCalculatedPrintJob: loadedJob,
+        lastCalculatedConfig: config,
+      });
     } catch (err) {
       console.error("Failed to load quote:", err);
+    } finally {
+      set({ isCalculating: false });
     }
   },
 }));
