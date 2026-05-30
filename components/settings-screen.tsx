@@ -8,7 +8,6 @@ import {
   Printer,
   UserRound,
   TrendingUp,
-  Save,
   RotateCcw,
   Plus,
   Pencil,
@@ -551,10 +550,6 @@ export function SettingsScreen() {
         <Button variant="outline" onClick={restoreDefaults}>
           <RotateCcw className="mr-2 h-4 w-4" />
           Restaurar Padrões
-        </Button>
-        <Button onClick={() => setCurrentScreen('calculator')}>
-          <Save className="mr-2 h-4 w-4" />
-          Salvar Configurações
         </Button>
       </div>
 

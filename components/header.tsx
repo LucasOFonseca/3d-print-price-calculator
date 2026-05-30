@@ -1,6 +1,6 @@
 "use client"
 
-import { Settings, Upload, Download, Printer } from 'lucide-react'
+import { Settings, Upload, Download, Printer, Calculator } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAppStore } from '@/lib/store'
 
@@ -74,7 +74,7 @@ export function Header() {
             size="sm"
             onClick={() => setCurrentScreen(currentScreen === 'settings' ? 'calculator' : 'settings')}
           >
-            <Settings className="mr-2 h-4 w-4" />
+            {currentScreen === 'settings' ? <Calculator className="mr-2 h-4 w-4" /> : <Settings className="mr-2 h-4 w-4" />}
             <span className="hidden sm:inline">
               {currentScreen === 'settings' ? 'Calculadora' : 'Configurações'}
             </span>

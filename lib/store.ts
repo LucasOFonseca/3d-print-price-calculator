@@ -163,7 +163,8 @@ interface AppState {
 const debouncedPatchEnergy = debounce(async (get: () => AppState, set: any) => {
   try {
     const { config } = get();
-    const res = await api.patch("/config/energy", config.energy);
+    const { id, updatedAt, ...energyData } = config.energy as any;
+    const res = await api.patch("/config/energy", energyData);
     set((state: AppState) => ({
       config: {
         ...state.config,
@@ -179,7 +180,8 @@ const debouncedPatchPrinter = debounce(
   async (get: () => AppState, set: any) => {
     try {
       const { config } = get();
-      const res = await api.patch("/config/printer", config.printer);
+      const { id, updatedAt, ...printerData } = config.printer as any;
+      const res = await api.patch("/config/printer", printerData);
       set((state: AppState) => ({
         config: {
           ...state.config,
@@ -196,7 +198,8 @@ const debouncedPatchPrinter = debounce(
 const debouncedPatchLabor = debounce(async (get: () => AppState, set: any) => {
   try {
     const { config } = get();
-    const res = await api.patch("/config/labor", config.labor);
+    const { id, updatedAt, ...laborData } = config.labor as any;
+    const res = await api.patch("/config/labor", laborData);
     set((state: AppState) => ({
       config: {
         ...state.config,
@@ -211,7 +214,8 @@ const debouncedPatchLabor = debounce(async (get: () => AppState, set: any) => {
 const debouncedPatchProfit = debounce(async (get: () => AppState, set: any) => {
   try {
     const { config } = get();
-    const res = await api.patch("/config/profit", config.profit);
+    const { id, updatedAt, ...profitData } = config.profit as any;
+    const res = await api.patch("/config/profit", profitData);
     set((state: AppState) => ({
       config: {
         ...state.config,
@@ -239,7 +243,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setConfig: (config) => set({ config }),
 
   updateFilament: async (filament) => {
-    const { id, ...data } = filament;
+    const { id, costPerGram, ...data } = filament;
     const res = await api.patch(`/filaments/${id}`, data);
     const updated = res.data.data;
     set((state) => ({
@@ -274,7 +278,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   updatePackaging: async (packaging) => {
-    const { id, ...data } = packaging;
+    const { id, costPerUnit, ...data } = packaging;
     const res = await api.patch(`/packaging/${id}`, data);
     const updated = res.data.data;
     set((state) => ({
