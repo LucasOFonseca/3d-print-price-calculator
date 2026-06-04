@@ -246,8 +246,8 @@ restoreDefaults: async () => {
     "printTimeHours": 2,
     "printTimeMinutes": 0,
     "includePostProcessing": false,
-    "packagingId": null,
-    "packagingName": null,
+    "packagingIds": [],
+    "packagingNames": [],
     "includePackaging": false,
     "useDefaultMargin": true,
     "profitMargin": 35

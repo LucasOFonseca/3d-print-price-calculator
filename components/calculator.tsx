@@ -42,7 +42,7 @@ export function Calculator() {
           printJob: {
             ...useAppStore.getState().printJob,
             ...(firstFilamentId ? { filamentId: firstFilamentId } : {}),
-            ...(firstPackagingId ? { packagingId: firstPackagingId } : {}),
+            ...(firstPackagingId ? { packagingIds: [firstPackagingId] } : {}),
           }
         })
       } catch (err) {

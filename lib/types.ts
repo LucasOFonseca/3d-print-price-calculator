@@ -45,7 +45,7 @@ export interface PrintJob {
   useDefaultMargin: boolean;
   profitMargin: number;
   includePostProcessing: boolean;
-  packagingId: string;
+  packagingIds: string[];
   includePackaging: boolean;
 }
 

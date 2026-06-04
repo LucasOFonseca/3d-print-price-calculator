@@ -93,7 +93,7 @@ const defaultPrintJob: PrintJob = {
   useDefaultMargin: true,
   profitMargin: 35,
   includePostProcessing: true,
-  packagingId: "1",
+  packagingIds: ["1"],
   includePackaging: false,
 };
 
@@ -428,7 +428,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   loadQuote: async (id: string) => {
     try {
       const res = await api.post(`/quotes/${id}/load`);
-      const { filamentName, packagingName, ...loadedJob } = res.data.data;
+      const { filamentName, packagingNames, ...loadedJob } = res.data.data;
       set({ printJob: loadedJob });
       // Calculate immediately so that the result is visible
       const config = get().config;

@@ -6,8 +6,11 @@ import {
   Paintbrush,
   Wrench,
   Sparkles,
-  Package
+  Package,
+  X,
+  Plus
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -199,11 +202,24 @@ export function PackagingForm() {
   const isEnabled = printJob.includePackaging === true
   const packagingList = config.packaging || []
   
-  const activePackagingId = printJob.packagingId || (packagingList.length > 0 ? packagingList[0].id : '')
-  const selectedPackaging = packagingList.find(p => p.id === activePackagingId)
+  const packagingIds = printJob.packagingIds || []
 
-  const handleSelectChange = (value: string) => {
-    setPrintJob({ packagingId: value })
+  const handleAddPackaging = () => {
+    if (packagingList.length > 0) {
+      setPrintJob({ packagingIds: [...packagingIds, packagingList[0].id] })
+    }
+  }
+
+  const handleRemovePackaging = (index: number) => {
+    const newIds = [...packagingIds]
+    newIds.splice(index, 1)
+    setPrintJob({ packagingIds: newIds })
+  }
+
+  const handlePackagingChange = (index: number, value: string) => {
+    const newIds = [...packagingIds]
+    newIds[index] = value
+    setPrintJob({ packagingIds: newIds })
   }
 
   const formatCurrency = (value: number) => {
@@ -212,6 +228,11 @@ export function PackagingForm() {
       currency: 'BRL'
     }).format(value)
   }
+
+  const totalCost = packagingIds.reduce((sum, id) => {
+    const pkg = packagingList.find(p => p.id === id)
+    return sum + (pkg ? pkg.costPerUnit : 0)
+  }, 0)
 
   return (
     <Card className={`border-border/50 shadow-sm transition-all duration-200 ${!isEnabled ? 'opacity-70' : ''}`}>
@@ -226,8 +247,8 @@ export function PackagingForm() {
           checked={isEnabled}
           onCheckedChange={(checked) => {
             const nextJob: Partial<typeof printJob> = { includePackaging: checked }
-            if (checked && !printJob.packagingId && packagingList.length > 0) {
-              nextJob.packagingId = packagingList[0].id
+            if (checked && packagingIds.length === 0 && packagingList.length > 0) {
+              nextJob.packagingIds = [packagingList[0].id]
             }
             setPrintJob(nextJob)
           }}
@@ -235,41 +256,50 @@ export function PackagingForm() {
       </CardHeader>
       <CardContent className="space-y-4">
         {isEnabled ? (
-          <div className="space-y-2">
-            <Label htmlFor="embalagem">Selecionar Embalagem</Label>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label>Embalagens Selecionadas</Label>
+            </div>
             {packagingList.length > 0 ? (
               <>
-                <Select
-                  value={activePackagingId}
-                  onValueChange={handleSelectChange}
-                >
-                  <SelectTrigger id="embalagem" className="w-full">
-                    <SelectValue placeholder="Selecione uma embalagem" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {packagingList.map((pkg) => (
-                      <SelectItem key={pkg.id} value={pkg.id}>
-                        {pkg.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-3">
+                  {packagingIds.map((id, index) => {
+                    const selectedPkg = packagingList.find(p => p.id === id)
+                    return (
+                      <div key={index} className="flex items-center gap-2">
+                        <Select
+                          value={id}
+                          onValueChange={(value) => handlePackagingChange(index, value)}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Selecione uma embalagem" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {packagingList.map((pkg) => (
+                              <SelectItem key={pkg.id} value={pkg.id}>
+                                {pkg.name} - {formatCurrency(pkg.costPerUnit)}/un
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive shrink-0" onClick={() => handleRemovePackaging(index)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )
+                  })}
+                </div>
 
-                {selectedPackaging && (
-                  <div className="mt-2 rounded-lg bg-muted/50 p-3">
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div>
-                        <span className="text-muted-foreground">Custo/Unid</span>
-                        <p className="font-medium">{formatCurrency(selectedPackaging.costPerUnit)}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Qtd Pacote</span>
-                        <p className="font-medium">{selectedPackaging.quantity} un</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Valor Pacote</span>
-                        <p className="font-medium">{formatCurrency(selectedPackaging.packagePrice)}</p>
-                      </div>
+                <Button variant="outline" className="w-full border-dashed" onClick={handleAddPackaging}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Incluir Embalagem
+                </Button>
+
+                {packagingIds.length > 0 && (
+                  <div className="mt-4 rounded-lg bg-muted/50 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Custo Total de Embalagens</span>
+                      <p className="font-semibold text-primary">{formatCurrency(totalCost)}</p>
                     </div>
                   </div>
                 )}
