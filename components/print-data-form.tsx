@@ -24,11 +24,47 @@ import {
 } from '@/components/ui/select'
 import { useAppStore } from '@/lib/store'
 import { TimeInput } from './time-input'
+import type { FilamentEntry } from '@/lib/types'
 
 export function PrintDataForm() {
   const { config, printJob, setPrintJob } = useAppStore()
 
-  const selectedFilament = config.filaments.find(f => f.id === printJob.filamentId)
+  const filaments: FilamentEntry[] = printJob.filaments?.length
+    ? printJob.filaments
+    : [{ filamentId: printJob.filamentId, materialUsed: printJob.materialUsed }]
+
+  const updateFilaments = (updated: FilamentEntry[]) => {
+    const first = updated[0] ?? { filamentId: '', materialUsed: 0 }
+    setPrintJob({
+      filaments: updated,
+      // keep legacy top-level fields in sync with the first entry
+      filamentId: first.filamentId,
+      materialUsed: first.materialUsed,
+    })
+  }
+
+  const handleAddFilament = () => {
+    if (config.filaments.length > 0) {
+      updateFilaments([...filaments, { filamentId: config.filaments[0].id, materialUsed: 0 }])
+    }
+  }
+
+  const handleRemoveFilament = (index: number) => {
+    if (filaments.length <= 1) return
+    const updated = [...filaments]
+    updated.splice(index, 1)
+    updateFilaments(updated)
+  }
+
+  const handleFilamentIdChange = (index: number, value: string) => {
+    const updated = filaments.map((f, i) => i === index ? { ...f, filamentId: value } : f)
+    updateFilaments(updated)
+  }
+
+  const handleMaterialUsedChange = (index: number, value: number) => {
+    const updated = filaments.map((f, i) => i === index ? { ...f, materialUsed: value } : f)
+    updateFilaments(updated)
+  }
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -36,6 +72,11 @@ export function PrintDataForm() {
       currency: 'BRL'
     }).format(value)
   }
+
+  const totalFilamentCost = filaments.reduce((sum, entry) => {
+    const fil = config.filaments.find(f => f.id === entry.filamentId)
+    return sum + (fil ? fil.costPerGram * entry.materialUsed : 0)
+  }, 0)
 
   return (
     <Card className="border-border/50 shadow-sm">
@@ -48,57 +89,103 @@ export function PrintDataForm() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Filamento */}
+          {/* Filamentos */}
           <div className="space-y-2">
-            <Label htmlFor="filamento">Filamento</Label>
-            <Select
-              value={printJob.filamentId}
-              onValueChange={(value) => setPrintJob({ filamentId: value })}
-            >
-              <SelectTrigger id="filamento" className="w-full">
-                <SelectValue placeholder="Selecione um filamento" />
-              </SelectTrigger>
-              <SelectContent>
-                {config.filaments.map((filament) => (
-                  <SelectItem key={filament.id} value={filament.id}>
-                    {filament.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {selectedFilament && (
-              <div className="mt-2 rounded-lg bg-muted/50 p-3">
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">Custo/g</span>
-                    <p className="font-medium">{formatCurrency(selectedFilament.costPerGram)}</p>
+            <div className="flex items-center justify-between">
+              <Label>Filamentos</Label>
+            </div>
+
+            <div className="space-y-3">
+              {filaments.map((entry, index) => {
+                const selectedFilament = config.filaments.find(f => f.id === entry.filamentId)
+                return (
+                  <div key={index} className="rounded-lg border border-border/50 p-3 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={entry.filamentId}
+                        onValueChange={(value) => handleFilamentIdChange(index, value)}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Selecione um filamento" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {config.filaments.map((filament) => (
+                            <SelectItem key={filament.id} value={filament.id}>
+                              {filament.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {filaments.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive shrink-0"
+                          onClick={() => handleRemoveFilament(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <Label htmlFor={`material-${index}`} className="text-xs text-muted-foreground mb-1 block">
+                          Quantidade utilizada (g)
+                        </Label>
+                        <Input
+                          id={`material-${index}`}
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={entry.materialUsed}
+                          onChange={(e) => handleMaterialUsedChange(index, parseFloat(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      {selectedFilament && (
+                        <div className="text-xs text-muted-foreground shrink-0 pt-5">
+                          {formatCurrency(selectedFilament.costPerGram)}/g
+                        </div>
+                      )}
+                    </div>
+
+                    {selectedFilament && (
+                      <div className="grid grid-cols-3 gap-2 text-xs rounded-md bg-muted/50 p-2">
+                        <div>
+                          <span className="text-muted-foreground">Custo/g</span>
+                          <p className="font-medium">{formatCurrency(selectedFilament.costPerGram)}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Peso do rolo</span>
+                          <p className="font-medium">{selectedFilament.spoolWeight}g</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Subtotal</span>
+                          <p className="font-medium text-primary">
+                            {formatCurrency(selectedFilament.costPerGram * entry.materialUsed)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">Peso do rolo</span>
-                    <p className="font-medium">{selectedFilament.spoolWeight}g</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Valor do rolo</span>
-                    <p className="font-medium">{formatCurrency(selectedFilament.spoolPrice)}</p>
-                  </div>
+                )
+              })}
+            </div>
+
+            <Button variant="outline" className="w-full border-dashed" onClick={handleAddFilament}>
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Filamento
+            </Button>
+
+            {filaments.length > 1 && (
+              <div className="rounded-lg bg-muted/50 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Custo Total de Filamento</span>
+                  <p className="font-semibold text-primary">{formatCurrency(totalFilamentCost)}</p>
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Material Utilizado */}
-          <div className="space-y-2">
-            <Label htmlFor="material">Quantidade utilizada (g)</Label>
-            <Input
-              id="material"
-              type="number"
-              min="0"
-              step="0.1"
-              value={printJob.materialUsed}
-              onChange={(e) => setPrintJob({ materialUsed: parseFloat(e.target.value) || 0 })}
-              placeholder="250"
-            />
           </div>
 
           {/* Tempo de Impressão */}

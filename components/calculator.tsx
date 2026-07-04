@@ -41,7 +41,10 @@ export function Calculator() {
           quotes: quotesRes.data.data,
           printJob: {
             ...useAppStore.getState().printJob,
-            ...(firstFilamentId ? { filamentId: firstFilamentId } : {}),
+            ...(firstFilamentId ? {
+              filamentId: firstFilamentId,
+              filaments: [{ filamentId: firstFilamentId, materialUsed: useAppStore.getState().printJob.materialUsed }],
+            } : {}),
             ...(firstPackagingId ? { packagingIds: [firstPackagingId] } : {}),
           }
         })

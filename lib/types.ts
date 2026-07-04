@@ -31,9 +31,15 @@ export interface ProfitConfig {
   defaultProfitMargin: number; // percentage
 }
 
-export interface PrintJob {
+export interface FilamentEntry {
   filamentId: string;
   materialUsed: number; // grams
+}
+
+export interface PrintJob {
+  filamentId: string;
+  materialUsed: number; // grams (legacy / primary, kept for backward compat)
+  filaments: FilamentEntry[];
   printTimeHours: number;
   printTimeMinutes: number;
   paintTimeHours: number;

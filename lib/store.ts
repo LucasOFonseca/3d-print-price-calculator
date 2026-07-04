@@ -5,6 +5,7 @@ import { api } from "@/lib/api-client";
 import type {
   AppConfig,
   Filament,
+  FilamentEntry,
   PrintJob,
   CalculationResult,
   Packaging,
@@ -82,6 +83,7 @@ const defaultConfig: AppConfig = {
 const defaultPrintJob: PrintJob = {
   filamentId: "1",
   materialUsed: 250,
+  filaments: [{ filamentId: "1", materialUsed: 250 }],
   printTimeHours: 12,
   printTimeMinutes: 30,
   paintTimeHours: 1,
